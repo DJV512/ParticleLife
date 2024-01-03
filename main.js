@@ -1,3 +1,8 @@
+// This code is entirely copied from the YouTube video "The code behind Particle Life" by Toh Mohr
+// I copied this code first just to see how it works, before implementing my own version in python
+// I claim no ownership of this code. See here instead: https://github.com/tom-mohr/particle-life-app
+// https://www.youtube.com/watch?v=scvuli-zcRc&t=440s
+
 function force(r, a) {
     const beta = 0.3;
     if (r < beta) {
