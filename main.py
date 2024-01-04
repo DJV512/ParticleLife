@@ -260,6 +260,203 @@ def main():
                             red_red_entry.set_text(float(f"{attract_matrix[0][0]:.2f}"))
                     except ValueError:
                         pass
+                if event.ui_element == red_green_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[0][1] = float(event.text)
+                        else:
+                            red_green_entry.set_text(float(f"{attract_matrix[0][1]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == red_blue_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[0][2] = float(event.text)
+                        else:
+                            red_blue_entry.set_text(float(f"{attract_matrix[0][2]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == red_purple_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[0][3] = float(event.text)
+                        else:
+                            red_purple_entry.set_text(float(f"{attract_matrix[0][3]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == red_yellow_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[0][4] = float(event.text)
+                        else:
+                            red_yellow_entry.set_text(float(f"{attract_matrix[0][4]:.2f}"))
+                    except ValueError:
+                        pass
+                
+                if event.ui_element == green_red_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[1][0] = float(event.text)
+                        else:
+                            green_red_entry.set_text(float(f"{attract_matrix[1][0]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == green_green_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[1][1] = float(event.text)
+                        else:
+                            green_green_entry.set_text(float(f"{attract_matrix[1][1]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == green_blue_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[1][2] = float(event.text)
+                        else:
+                            green_blue_entry.set_text(float(f"{attract_matrix[1][2]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == green_purple_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[1][3] = float(event.text)
+                        else:
+                            green_purple_entry.set_text(float(f"{attract_matrix[1][3]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == green_yellow_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[1][4] = float(event.text)
+                        else:
+                            green_yellow_entry.set_text(float(f"{attract_matrix[1][4]:.2f}"))
+                    except ValueError:
+                        pass
+                
+                if event.ui_element == blue_red_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[2][0] = float(event.text)
+                        else:
+                            blue_red_entry.set_text(float(f"{attract_matrix[2][0]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == blue_green_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[2][1] = float(event.text)
+                        else:
+                            blue_green_entry.set_text(float(f"{attract_matrix[2][1]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == blue_blue_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[2][2] = float(event.text)
+                        else:
+                            blue_blue_entry.set_text(float(f"{attract_matrix[2][2]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == blue_purple_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[2][3] = float(event.text)
+                        else:
+                            blue_purple_entry.set_text(float(f"{attract_matrix[2][3]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == blue_yellow_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[2][4] = float(event.text)
+                        else:
+                            blue_yellow_entry.set_text(float(f"{attract_matrix[2][4]:.2f}"))
+                    except ValueError:
+                        pass
+                
+                if event.ui_element == purple_red_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[3][0] = float(event.text)
+                        else:
+                            purple_red_entry.set_text(float(f"{attract_matrix[3][0]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == purple_green_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[3][1] = float(event.text)
+                        else:
+                            purple_green_entry.set_text(float(f"{attract_matrix[3][1]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == purple_blue_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[3][2] = float(event.text)
+                        else:
+                            purple_blue_entry.set_text(float(f"{attract_matrix[3][2]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == purple_purple_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[3][3] = float(event.text)
+                        else:
+                            purple_purple_entry.set_text(float(f"{attract_matrix[3][3]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == purple_yellow_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[3][4] = float(event.text)
+                        else:
+                            purple_yellow_entry.set_text(float(f"{attract_matrix[3][4]:.2f}"))
+                    except ValueError:
+                        pass
+                
+                if event.ui_element == yellow_red_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[4][0] = float(event.text)
+                        else:
+                            yellow_red_entry.set_text(float(f"{attract_matrix[4][0]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == yellow_green_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[4][1] = float(event.text)
+                        else:
+                            yellow_green_entry.set_text(float(f"{attract_matrix[4][1]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == yellow_blue_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[4][2] = float(event.text)
+                        else:
+                            yellow_blue_entry.set_text(float(f"{attract_matrix[4][2]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == yellow_purple_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[4][3] = float(event.text)
+                        else:
+                            yellow_purple_entry.set_text(float(f"{attract_matrix[4][3]:.2f}"))
+                    except ValueError:
+                        pass
+                if event.ui_element == yellow_yellow_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[4][4] = float(event.text)
+                        else:
+                            yellow_yellow_entry.set_text(float(f"{attract_matrix[4][4]:.2f}"))
+                    except ValueError:
+                        pass
+                
 
             # Handle button click
             elif event.type == pygame_gui.UI_BUTTON_PRESSED:
