@@ -23,7 +23,7 @@ default_rmax = screen_size_y/10
 default_friction_half_life = 0.04
 default_beta = 0.3
 default_force_factor = 20
-border = 0
+wall_repel_distance = 30
 
 color_dict = {
         red: 0,
@@ -104,7 +104,7 @@ def main():
     manager = pygame_gui.UIManager((panel_size, screen_size_y), 'theme.json')
 
 
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 980), (300, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 580), (300, 20)),
                                             text="Particle Life, by David Vance, 2024",
                                             manager=manager)
 
@@ -241,25 +241,25 @@ def main():
     yellow_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 440), (50, 20)),
                                             text="Y-Y", manager=manager)
     
-    red_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, 500), (50, 20)),
+    red_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, 520), (50, 20)),
                                             text="RED", manager=manager)
-    red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,520),(50,30)),
+    red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,540),(50,30)),
                                                         manager=manager, initial_text=f"{red_count}")
-    green_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, 500), (50, 20)),
+    green_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, 520), (50, 20)),
                                             text="GRN", manager=manager)
-    green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,520),(50,30)),
+    green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,540),(50,30)),
                                                         manager=manager, initial_text=f"{green_count}")
-    blue_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, 500), (50, 20)),
+    blue_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, 520), (50, 20)),
                                             text="BLU", manager=manager)
-    blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,520),(50,30)),
+    blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,540),(50,30)),
                                                         manager=manager, initial_text=f"{blue_count}")
-    purple_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, 500), (50, 20)),
+    purple_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, 520), (50, 20)),
                                             text="PUR", manager=manager)
-    purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,520),(50,30)),
+    purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,540),(50,30)),
                                                         manager=manager, initial_text=f"{purple_count}")
-    yellow_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 500), (50, 20)),
+    yellow_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 520), (50, 20)),
                                             text="YEL", manager=manager)
-    yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,520),(50,30)),
+    yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,540),(50,30)),
                                                         manager=manager, initial_text=f"{yellow_count}")
 
     running = True
@@ -584,19 +584,28 @@ def main():
                             r = .0000001 
                         accel_x += rx/r * f
                         accel_y += ry/r * f
-            distance_to_x_wall = min(abs(x_positions[i]-simulation_size_x), x_positions[i])
-            distance_to_y_wall = min(abs(y_positions[i]-screen_size_y), y_positions[i])
-            if distance_to_x_wall < 30:
-                accel_x += 1 - distance_to_x_wall/30
-            if distance_to_y_wall < 30:
-                accel_y += 1 - distance_to_y_wall/30
+
+            # Make particles repel off the walls
+            distance_to_right_wall = simulation_size_x - x_positions[i]
+            distance_to_bottom_wall = screen_size_y - y_positions[i]
+            if distance_to_right_wall < wall_repel_distance:
+                accel_x -= (1.5 - distance_to_right_wall/wall_repel_distance)
+            if distance_to_bottom_wall < wall_repel_distance:
+                accel_y -= (1.5 - distance_to_bottom_wall/wall_repel_distance)
+            if x_positions[i] < wall_repel_distance:
+                accel_x += 1.5 - x_positions[i]/wall_repel_distance
+            if y_positions[i] < wall_repel_distance:
+                accel_y += 1.5 - y_positions[i]/wall_repel_distance
             
+            # Scaling factor for the strength of the attraction or repulsion force
             accel_x *= rmax * force_factor
             accel_y *= rmax * force_factor
             
+            # Slow the particles down to account for friction
             x_velocity[i] *= friction_factor
             y_velocity[i] *= friction_factor
 
+            # Update velocity
             x_velocity[i] += accel_x * dt
             y_velocity[i] += accel_y * dt
 
