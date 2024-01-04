@@ -6,7 +6,7 @@
 This project is still a work in progress, and will change frequently.
 
 ### NOTE:
-The code within main.js is entirely copied from the YouTube video "The code behind Particle Life" by Toh Mohr.
+The code within main.js is entirely copied from the YouTube video "The code behind Particle Life" by Tom Mohr.
 I copied that code first just to see how it works, before implementing my own version in Python.
 I claim no ownership of the javascript code. See these links instead:
 https://github.com/tom-mohr/particle-life-app
