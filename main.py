@@ -10,12 +10,13 @@ green = (0,255,0)
 purple = (255,0,255)
 yellow = (255,255,0)
 background = (0,0,0)
-screen_size_x = 1300
-screen_size_y = 1000
+screen_size_x = 900
+simulation_size_x = 600
+screen_size_y = 600
 panel_size = 300
-particle_size = 1
-num_particles = 350
-rate = 60
+particle_size = 2
+num_particles = 600
+rate = 50
 dt = 1/rate
 initial_speed = 0
 default_rmax = screen_size_y/10
@@ -36,10 +37,8 @@ color_dict = {
 def force(attraction, scaled_distance, beta):
     if scaled_distance < beta:
         return (scaled_distance/beta) + 1
-    elif beta < scaled_distance and scaled_distance < 1:
-        return attraction * (1 - abs(2 * scaled_distance - 1 - beta)/ (1 - beta))
     else:
-        return 0
+        return attraction * (1 - abs(2 * scaled_distance - 1 - beta)/ (1 - beta))
 
 
 def new_matrix():
@@ -56,16 +55,32 @@ def make_random_particles(num_particles):
     x_velocity = []
     y_velocity = []
     particle_color = []
+    red_count = 0
+    green_count = 0
+    blue_count = 0
+    purple_count = 0
+    yellow_count = 0
 
     for i in range(num_particles):
-        x_positions.append(float(random.randint(0,screen_size_x)))
+        x_positions.append(float(random.randint(0,simulation_size_x)))
         y_positions.append(float(random.randint(0,screen_size_y)))
         x_velocity.append(float(random.randint(-initial_speed,initial_speed)))
         y_velocity.append(float(random.randint(-initial_speed,initial_speed)))
         color = random.choice([red, blue, green, yellow, purple])
+        print(color)
         particle_color.append(color)
+        if color == (255,0,0):
+            red_count += 1
+        elif color == (0,255,0):
+            green_count += 1
+        elif color == (0,0,255):
+            blue_count += 1
+        elif color == (255,0,255):
+            purple_count += 1
+        elif color == (255,255,0):
+            yellow_count += 1
     
-    return x_positions, y_positions, x_velocity, y_velocity, particle_color
+    return x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count
 
 
 def main():
@@ -76,7 +91,7 @@ def main():
 
     friction_factor = 0.5 ** (dt/friction_half_life)
 
-    x_positions, y_positions, x_velocity, y_velocity, particle_color = make_random_particles(num_particles)
+    x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count = make_random_particles(num_particles)
     attract_matrix = new_matrix()
 
 
@@ -85,7 +100,7 @@ def main():
     
     pygame.display.set_caption("Particle Life")
     screen = pygame.display.set_mode([screen_size_x, screen_size_y])
-    simulation_screen = pygame.Surface((screen_size_x, screen_size_y))
+    simulation_screen = pygame.Surface((simulation_size_x, screen_size_y))
     panel = pygame.Surface((300,1000))
     manager = pygame_gui.UIManager((panel_size, screen_size_y), 'theme.json')
 
@@ -226,6 +241,11 @@ def main():
                                                         manager=manager, initial_text=f"{attract_matrix[4][4]:.2f}")
     yellow_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 440), (50, 20)),
                                             text="Y-Y", manager=manager)
+    
+    red_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, 500), (50, 20)),
+                                            text="RED", manager=manager)
+    red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,520),(50,30)),
+                                                        manager=manager, initial_text=f"{red_count}")
 
     running = True
     while running:
@@ -478,7 +498,7 @@ def main():
                     slider_rmax.set_current_value(rmax)
                     text_rmax.set_text(f"rMax: {rmax:.2f}")
 
-                    x_positions, y_positions, x_velocity, y_velocity, particle_color = make_random_particles(num_particles)
+                    x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count = make_random_particles(num_particles)
 
                 elif event.ui_element == new_matrix_button:
                     attract_matrix = new_matrix()
@@ -540,14 +560,15 @@ def main():
                     rx = x_positions[i]-x_positions[j]
                     ry = y_positions[i]-y_positions[j]
                     r = (rx**2 + ry**2)**(1/2)
-                    n = color_dict[particle_color[i]]
-                    m = color_dict[particle_color[j]]
-                    attraction = attract_matrix[n][m]
-                    f = force(attraction, r/rmax, beta)
-                    if r == 0:
-                        r = .0000001 
-                    accel_x += rx/r * f
-                    accel_y += ry/r * f
+                    if r < rmax:
+                        n = color_dict[particle_color[i]]
+                        m = color_dict[particle_color[j]]
+                        attraction = attract_matrix[n][m]
+                        f = force(attraction, r/rmax, beta)
+                        if r == 0:
+                            r = .0000001 
+                        accel_x += rx/r * f
+                        accel_y += ry/r * f
             
             accel_x *= rmax * force_factor
             accel_y *= rmax * force_factor
