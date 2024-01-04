@@ -590,25 +590,25 @@ def main():
             distance_to_right_wall = simulation_size_x - x_positions[i]
             distance_to_bottom_wall = screen_size_y - y_positions[i]
 
-            if distance_to_right_wall < wall_repel_distance and wall_repel_distance > 0:
+            if distance_to_right_wall < wall_repel_distance and distance_to_right_wall > 0:
                 accel_x -= (1.5 - distance_to_right_wall/wall_repel_distance)
             elif distance_to_right_wall < 0:
-                accel_x -= 1.5
+                accel_x -= 1.5 * (1 - distance_to_right_wall/wall_repel_distance)
 
             if distance_to_bottom_wall < wall_repel_distance and distance_to_bottom_wall > 0:
                 accel_y -= (1.5 - distance_to_bottom_wall/wall_repel_distance)
             elif distance_to_bottom_wall < 0:
-                accel_y -= 1.5
+                accel_y -= 1.5 * (1-distance_to_bottom_wall/wall_repel_distance)
 
             if x_positions[i] < wall_repel_distance and x_positions[i] > 0:
                 accel_x += 1.5 - x_positions[i]/wall_repel_distance
             elif x_positions[i] < 0:
-                accel_x += 1.5
+                accel_x += 1.5 * (1 - x_positions[i]/wall_repel_distance)
 
             if y_positions[i] < wall_repel_distance and y_positions[i] > 0:
                 accel_y += 1.5 - y_positions[i]/wall_repel_distance
             elif y_positions[i] < 0:
-                accel_y += 1.5
+                accel_y += 1.5 * (1 - y_positions[i]/wall_repel_distance)
             
             # Scaling factor for the strength of the attraction or repulsion force
             accel_x *= rmax * force_factor
