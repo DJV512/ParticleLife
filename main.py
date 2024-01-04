@@ -21,7 +21,7 @@ dt = 1/rate
 initial_speed = 0
 default_rmax = screen_size_y/10
 default_friction_half_life = 0.04
-default_beta = 0.1
+default_beta = 0.3
 default_force_factor = 20
 border = 0
 
@@ -36,7 +36,7 @@ color_dict = {
     
 def force(attraction, scaled_distance, beta):
     if scaled_distance < beta:
-        return (scaled_distance/beta) + 1
+        return 1- (scaled_distance/beta)
     else:
         return attraction * (1 - abs(2 * scaled_distance - 1 - beta)/ (1 - beta))
 
@@ -67,7 +67,6 @@ def make_random_particles(num_particles):
         x_velocity.append(float(random.randint(-initial_speed,initial_speed)))
         y_velocity.append(float(random.randint(-initial_speed,initial_speed)))
         color = random.choice([red, blue, green, yellow, purple])
-        print(color)
         particle_color.append(color)
         if color == (255,0,0):
             red_count += 1
@@ -246,6 +245,22 @@ def main():
                                             text="RED", manager=manager)
     red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,520),(50,30)),
                                                         manager=manager, initial_text=f"{red_count}")
+    green_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, 500), (50, 20)),
+                                            text="GRN", manager=manager)
+    green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,520),(50,30)),
+                                                        manager=manager, initial_text=f"{green_count}")
+    blue_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, 500), (50, 20)),
+                                            text="BLU", manager=manager)
+    blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,520),(50,30)),
+                                                        manager=manager, initial_text=f"{blue_count}")
+    purple_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, 500), (50, 20)),
+                                            text="PUR", manager=manager)
+    purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,520),(50,30)),
+                                                        manager=manager, initial_text=f"{purple_count}")
+    yellow_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 500), (50, 20)),
+                                            text="YEL", manager=manager)
+    yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,520),(50,30)),
+                                                        manager=manager, initial_text=f"{yellow_count}")
 
     running = True
     while running:
@@ -569,6 +584,12 @@ def main():
                             r = .0000001 
                         accel_x += rx/r * f
                         accel_y += ry/r * f
+            distance_to_x_wall = min(abs(x_positions[i]-simulation_size_x), x_positions[i])
+            distance_to_y_wall = min(abs(y_positions[i]-screen_size_y), y_positions[i])
+            if distance_to_x_wall < 30:
+                accel_x += 1 - distance_to_x_wall/30
+            if distance_to_y_wall < 30:
+                accel_y += 1 - distance_to_y_wall/30
             
             accel_x *= rmax * force_factor
             accel_y *= rmax * force_factor
@@ -585,23 +606,23 @@ def main():
             y_positions[i] += y_velocity[i]*dt
 
 
-        # Making particles teleport to the opposite side of the screen
+        # # Making particles teleport to the opposite side of the screen
         # for i in range(num_particles):
-        #     if (x_positions[i] - particle_size) < border:
-        #         x_positions[i] = screen_size - border
-        #     elif (x_positions[i] + particle_size) > (screen_size - border):
-        #         x_positions[i] = border
+        #     if x_positions[i]  < 0:
+        #         x_positions[i] = simulation_size_x
+        #     elif x_positions[i] > simulation_size_x:
+        #         x_positions[i] = 0
 
-        #     if (y_positions[i] - particle_size) < border:
-        #         y_positions[i] = screen_size - border
-        #     elif (y_positions[i] + particle_size) > (screen_size - border):
-        #         y_positions[i] = border
+        #     if y_positions[i] < 0:
+        #         y_positions[i] = screen_size_y
+        #     elif y_positions[i] > screen_size_y:
+        #         y_positions[i] = 0
             
-        # Making particles bounce off the walls
+        # # Making particles bounce off the walls
         # for i in range(num_particles):
-        #     if (x_positions[i] - particle_size) < border or (x_positions[i] + particle_size) > (screen_size - border):
+        #     if x_positions[i] < 0 or x_positions[i] > simulation_size_x:
         #         x_velocity[i] = -x_velocity[i]
-        #     if (y_positions[i] - particle_size) < border or (y_positions[i] + particle_size) > (screen_size - border):
+        #     if y_positions[i] < 0 or y_positions[i] > screen_size_y:
         #         y_velocity[i] = -y_velocity[i]
         
         # Controls frame rate
