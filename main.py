@@ -556,7 +556,7 @@ def main():
 
         # Draw all particles onto the simulation_screen surface
         for i in range(num_particles):
-            pygame.draw.circle(simulation_screen, particle_color[i], (x_positions[i],y_positions[i]), particle_size)
+            pygame.draw.circle(simulation_screen, particle_color[i], (x_positions[i], y_positions[i]), particle_size)
         
         # Update the control panel, draw the control panel, and paste the control panel and simulation surfaces onto the main screen
         manager.update(dt)        
