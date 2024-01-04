@@ -549,20 +549,21 @@ def main():
 
             manager.process_events(event)
 
+        # Fill the background color
         screen.fill(background)
         panel.fill(background)
         simulation_screen.fill(background)
 
-        # Draw all particles
+        # Draw all particles onto the simulation_screen surface
         for i in range(num_particles):
             pygame.draw.circle(simulation_screen, particle_color[i], (x_positions[i],y_positions[i]), particle_size)
         
+        # Update the control panel, draw the control panel, and paste the control panel and simulation surfaces onto the main screen
         manager.update(dt)        
         manager.draw_ui(panel)
         screen.blit(panel, (0,0))
         screen.blit(simulation_screen, (300,0))
         pygame.display.flip()
-
 
         # Update particle velocities
         for i in range(num_particles):
@@ -588,14 +589,26 @@ def main():
             # Make particles repel off the walls
             distance_to_right_wall = simulation_size_x - x_positions[i]
             distance_to_bottom_wall = screen_size_y - y_positions[i]
-            if distance_to_right_wall < wall_repel_distance:
+
+            if distance_to_right_wall < wall_repel_distance and wall_repel_distance > 0:
                 accel_x -= (1.5 - distance_to_right_wall/wall_repel_distance)
-            if distance_to_bottom_wall < wall_repel_distance:
+            elif distance_to_right_wall < 0:
+                accel_x -= 1.5
+
+            if distance_to_bottom_wall < wall_repel_distance and distance_to_bottom_wall > 0:
                 accel_y -= (1.5 - distance_to_bottom_wall/wall_repel_distance)
-            if x_positions[i] < wall_repel_distance:
+            elif distance_to_bottom_wall < 0:
+                accel_y -= 1.5
+
+            if x_positions[i] < wall_repel_distance and x_positions[i] > 0:
                 accel_x += 1.5 - x_positions[i]/wall_repel_distance
-            if y_positions[i] < wall_repel_distance:
+            elif x_positions[i] < 0:
+                accel_x += 1.5
+
+            if y_positions[i] < wall_repel_distance and y_positions[i] > 0:
                 accel_y += 1.5 - y_positions[i]/wall_repel_distance
+            elif y_positions[i] < 0:
+                accel_y += 1.5
             
             # Scaling factor for the strength of the attraction or repulsion force
             accel_x *= rmax * force_factor
@@ -605,34 +618,14 @@ def main():
             x_velocity[i] *= friction_factor
             y_velocity[i] *= friction_factor
 
-            # Update velocity
+            # Update velocity based on x and y acceleration and the time step
             x_velocity[i] += accel_x * dt
             y_velocity[i] += accel_y * dt
 
-        # Update particle positions based on x and y velocities and the time step
+        # Update particle positions based on x and y velocity and the time step
         for i in range(num_particles):
             x_positions[i] += x_velocity[i]*dt
             y_positions[i] += y_velocity[i]*dt
-
-
-        # # Making particles teleport to the opposite side of the screen
-        # for i in range(num_particles):
-        #     if x_positions[i]  < 0:
-        #         x_positions[i] = simulation_size_x
-        #     elif x_positions[i] > simulation_size_x:
-        #         x_positions[i] = 0
-
-        #     if y_positions[i] < 0:
-        #         y_positions[i] = screen_size_y
-        #     elif y_positions[i] > screen_size_y:
-        #         y_positions[i] = 0
-            
-        # # Making particles bounce off the walls
-        # for i in range(num_particles):
-        #     if x_positions[i] < 0 or x_positions[i] > simulation_size_x:
-        #         x_velocity[i] = -x_velocity[i]
-        #     if y_positions[i] < 0 or y_positions[i] > screen_size_y:
-        #         y_velocity[i] = -y_velocity[i]
         
         # Controls frame rate
         clock.tick(rate)
