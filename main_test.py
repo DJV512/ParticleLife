@@ -2,7 +2,7 @@ import numpy as np
 import pygame
 import pygame_gui
 import random
-import time
+# import time
 
 BLUE = (0,0,255)
 RED = (255,0,0)
@@ -44,13 +44,13 @@ def force(attraction, scaled_distance, beta):
     else:
         return attraction * (1 - abs(2 * scaled_distance - 1 - beta)/ (1 - beta))
 
-def new_matrix():
+def new_matrix(n):
     '''
     Generates a matrix of random attraction and repulsion for each pair of colors between -1 and 1.
     '''
-    attract_matrix = np.ndarray(shape=(5,5), dtype=float)
-    for i in range(5):
-        for j in range(5):
+    attract_matrix = np.ndarray(shape=(n,n), dtype=float)
+    for i in range(n):
+        for j in range(n):
             attract_matrix[i][j] = random.random()*2 - 1  
     return attract_matrix  
 
@@ -96,6 +96,7 @@ def main():
     rmax = default_rmax
     friction_half_life = default_friction_half_life
     beta = default_beta
+    num_colors = 5
 
     # Control the friction force
     force_factor = default_force_factor
@@ -106,7 +107,7 @@ def main():
 
     # Make num_particles number of randomly positioned and colored colors, and randomize an attraction matrx for all colors
     x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count = make_random_particles(num_particles)
-    attract_matrix = new_matrix()
+    attract_matrix = new_matrix(num_colors)
 
 
     pygame.init()
@@ -530,7 +531,7 @@ def main():
                     x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count = make_random_particles(num_particles)
 
                 elif event.ui_element == new_matrix_button:
-                    attract_matrix = new_matrix()
+                    attract_matrix = new_matrix(num_colors)
                     red_red_entry.set_text(f"{attract_matrix[0][0]:.2f}")
                     red_green_entry.set_text(f"{attract_matrix[0][1]:.2f}")
                     red_blue_entry.set_text(f"{attract_matrix[0][2]:.2f}")
