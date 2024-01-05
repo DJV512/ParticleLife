@@ -14,10 +14,10 @@ BLACK = (0,0,0)
 WHITE = (255,255,255)
 
 # Screen size parameters
-screen_size_x = 1300
-simulation_size_x = 1000
+screen_size_x = 1340
+panel_size_x = 340
+simulation_size_x = screen_size_x - panel_size_x
 screen_size_y = 1000
-panel_size = 300
 
 particle_size = 2
 wall_repel_distance = 30
@@ -76,13 +76,14 @@ def make_random_particles(num_particles):
     blue_count = 0
     purple_count = 0
     yellow_count = 0
+    cyan_count = 0
 
     for _ in range(num_particles):
         x_positions.append(float(random.uniform(0,simulation_size_x)))
         y_positions.append(float(random.uniform(0,screen_size_y)))
         x_velocity.append(0)
         y_velocity.append(0)
-        color = random.choice([RED, BLUE, GREEN, YELLOW, PURPLE])
+        color = random.choice([RED, GREEN, BLUE, PURPLE, YELLOW, CYAN])
         particle_color.append(color)
         if color == RED:
             red_count += 1
@@ -94,12 +95,14 @@ def make_random_particles(num_particles):
             purple_count += 1
         elif color == YELLOW:
             yellow_count += 1
+        elif color == CYAN:
+            cyan_count += 1
     
-    return x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count
+    return x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count, cyan_count
 
 def main():
     num_particles = 600
-    num_colors = 5
+    num_colors = 6
     rmax = default_rmax
     friction_half_life = default_friction_half_life
     beta = default_beta
@@ -112,7 +115,7 @@ def main():
     event_timer = 1
 
     # Make num_particles number of randomly positioned and colored colors, and randomize an attraction matrx for all colors
-    x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count = make_random_particles(num_particles)
+    x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count, cyan_count = make_random_particles(num_particles)
     attract_matrix = new_matrix(num_colors)
 
 
@@ -122,37 +125,37 @@ def main():
     pygame.display.set_caption("Particle Life")
     screen = pygame.display.set_mode([screen_size_x, screen_size_y])
     simulation_screen = pygame.Surface((simulation_size_x, screen_size_y))
-    panel = pygame.Surface((300,1000))
-    manager = pygame_gui.UIManager((panel_size, screen_size_y), 'theme.json')
+    panel = pygame.Surface((panel_size_x,screen_size_y))
+    manager = pygame_gui.UIManager((panel_size_x, screen_size_y), 'theme.json')
 
 
-    credit_line = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 580), (300, 20)),
+    credit_line = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 980), (300, 20)),
                                             text="Particle Life, by David Vance, 2024",
                                             manager=manager)
 
-    reset_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((25, 10), (120, 30)),
+    reset_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((50, 10), (120, 30)),
                                             text='Reset', manager=manager)
-    new_matrix_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((145, 10), (120, 30)),
+    new_matrix_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, 10), (120, 30)),
                                             text='New Forces', manager=manager)
-    slider_beta = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, 70), (250, 20)),
+    slider_beta = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, 70), (300, 20)),
                                                   start_value=beta, value_range=(0, 1),
                                                   manager=manager)
     text_beta = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((25, 50), (80, 20)),
                                             text=f"Beta: {slider_beta.get_current_value():.2f}",
                                             manager=manager)
-    slider_friction = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, 120), (250, 20)),
+    slider_friction = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, 120), (300, 20)),
                                                   start_value=friction_half_life, value_range=(0.0001, 3),
                                                   manager=manager)
     text_friction = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, 100), (120, 20)),
                                             text=f"Friction: {slider_friction.get_current_value():.2f}",
                                             manager=manager)
-    slider_force = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, 170), (250, 20)),
+    slider_force = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, 170), (300, 20)),
                                                   start_value=force_factor, value_range=(0, 50),
                                                   manager=manager)
     text_force = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, 150), (100, 20)),
                                             text=f"Force: {slider_force.get_current_value():.2f}",
                                             manager=manager)
-    slider_rmax = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, 220), (250, 20)),
+    slider_rmax = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, 220), (300, 20)),
                                                   start_value=rmax, value_range=(0, screen_size_y) ,
                                                   manager=manager)
     text_rmax = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, 200), (100, 20)),
@@ -178,6 +181,10 @@ def main():
                                                         manager=manager, initial_text=f"{attract_matrix[0][4]:.2f}")
     red_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 240), (50, 20)),
                                             text="R-Y", manager=manager)
+    red_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,260),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[0][5]:.2f}")
+    red_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, 240), (50, 20)),
+                                            text="R-C", manager=manager)
     
     green_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,310),(50,30)),
                                                         manager=manager, initial_text=f"{attract_matrix[1][0]:.2f}")
@@ -199,6 +206,10 @@ def main():
                                                         manager=manager, initial_text=f"{attract_matrix[1][4]:.2f}")
     green_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 290), (50, 20)),
                                             text="G-Y", manager=manager)
+    green_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,310),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[1][5]:.2f}")
+    green_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, 290), (50, 20)),
+                                            text="G-C", manager=manager)
 
     blue_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,360),(50,30)),
                                                         manager=manager, initial_text=f"{attract_matrix[2][0]:.2f}")
@@ -220,6 +231,10 @@ def main():
                                                         manager=manager, initial_text=f"{attract_matrix[2][4]:.2f}")
     blue_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 340), (50, 20)),
                                             text="B-Y", manager=manager)
+    blue_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,360),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[2][5]:.2f}")
+    blue_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, 340), (50, 20)),
+                                            text="B-C", manager=manager)
     
     purple_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,410),(50,30)),
                                                         manager=manager, initial_text=f"{attract_matrix[3][0]:.2f}")
@@ -241,6 +256,10 @@ def main():
                                                         manager=manager, initial_text=f"{attract_matrix[3][4]:.2f}")
     purple_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 390), (50, 20)),
                                             text="P-Y", manager=manager)
+    purple_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,410),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[3][5]:.2f}")
+    purple_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, 390), (50, 20)),
+                                            text="P-C", manager=manager)
     
     yellow_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,460),(50,30)),
                                                         manager=manager, initial_text=f"{attract_matrix[4][0]:.2f}")
@@ -262,27 +281,61 @@ def main():
                                                         manager=manager, initial_text=f"{attract_matrix[4][4]:.2f}")
     yellow_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 440), (50, 20)),
                                             text="Y-Y", manager=manager)
+    yellow_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,460),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[4][5]:.2f}")
+    yellow_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, 440), (50, 20)),
+                                            text="Y-C", manager=manager)
     
-    red_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, 520), (50, 20)),
+    cyan_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,510),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[5][0]:.2f}")
+    cyan_red_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, 490), (50, 20)),
+                                            text="C-R", manager=manager)
+    cyan_green_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,510),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[5][1]:.2f}")
+    cyan_green_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, 490), (50, 20)),
+                                            text="C-G", manager=manager)
+    cyan_blue_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,510),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[5][2]:.2f}")
+    cyan_blue_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, 490), (50, 20)),
+                                            text="C-B", manager=manager)
+    cyan_purple_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,510),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[5][3]:.2f}")
+    cyan_purple_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, 490), (50, 20)),
+                                            text="C-P", manager=manager)
+    cyan_yellow_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,510),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[5][4]:.2f}")
+    cyan_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 490), (50, 20)),
+                                            text="C-Y", manager=manager)
+    cyan_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,510),(50,30)),
+                                                        manager=manager, initial_text=f"{attract_matrix[5][5]:.2f}")
+    cyan_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, 490), (50, 20)),
+                                            text="C-C", manager=manager)
+    
+    red_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, 570), (50, 20)),
                                             text="RED", manager=manager)
-    red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,540),(50,30)),
+    red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,590),(50,30)),
                                                         manager=manager, initial_text=f"{red_count}")
-    green_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, 520), (50, 20)),
+    green_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, 570), (50, 20)),
                                             text="GRN", manager=manager)
-    green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,540),(50,30)),
+    green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,590),(50,30)),
                                                         manager=manager, initial_text=f"{green_count}")
-    blue_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, 520), (50, 20)),
+    blue_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, 570), (50, 20)),
                                             text="BLU", manager=manager)
-    blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,540),(50,30)),
+    blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,590),(50,30)),
                                                         manager=manager, initial_text=f"{blue_count}")
-    purple_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, 520), (50, 20)),
+    purple_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, 570), (50, 20)),
                                             text="PUR", manager=manager)
-    purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,540),(50,30)),
+    purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,590),(50,30)),
                                                         manager=manager, initial_text=f"{purple_count}")
-    yellow_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 520), (50, 20)),
+    yellow_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, 570), (50, 20)),
                                             text="YEL", manager=manager)
-    yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,540),(50,30)),
+    yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,590),(50,30)),
                                                         manager=manager, initial_text=f"{yellow_count}")
+    cyan_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, 570), (50, 20)),
+                                            text="CYN", manager=manager)
+    cyan_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,590),(50,30)),
+                                                        manager=manager, initial_text=f"{cyan_count}")
+
 
     running = True
     while running:
@@ -313,204 +366,221 @@ def main():
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[0][0] = float(event.text)
-                        else:
-                            red_red_entry.set_text(float(f"{attract_matrix[0][0]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == red_green_entry:
+                elif event.ui_element == red_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[0][1] = float(event.text)
-                        else:
-                            red_green_entry.set_text(float(f"{attract_matrix[0][1]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == red_blue_entry:
+                elif event.ui_element == red_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[0][2] = float(event.text)
-                        else:
-                            red_blue_entry.set_text(float(f"{attract_matrix[0][2]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == red_purple_entry:
+                elif event.ui_element == red_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[0][3] = float(event.text)
-                        else:
-                            red_purple_entry.set_text(float(f"{attract_matrix[0][3]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == red_yellow_entry:
+                elif event.ui_element == red_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[0][4] = float(event.text)
-                        else:
-                            red_yellow_entry.set_text(float(f"{attract_matrix[0][4]:.2f}"))
+                    except ValueError:
+                        pass
+                elif event.ui_element == red_cyan_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[0][5] = float(event.text)
                     except ValueError:
                         pass
                 
-                if event.ui_element == green_red_entry:
+                elif event.ui_element == green_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[1][0] = float(event.text)
-                        else:
-                            green_red_entry.set_text(float(f"{attract_matrix[1][0]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == green_green_entry:
+                elif event.ui_element == green_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[1][1] = float(event.text)
-                        else:
-                            green_green_entry.set_text(float(f"{attract_matrix[1][1]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == green_blue_entry:
+                elif event.ui_element == green_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[1][2] = float(event.text)
-                        else:
-                            green_blue_entry.set_text(float(f"{attract_matrix[1][2]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == green_purple_entry:
+                elif event.ui_element == green_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[1][3] = float(event.text)
-                        else:
-                            green_purple_entry.set_text(float(f"{attract_matrix[1][3]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == green_yellow_entry:
+                elif event.ui_element == green_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[1][4] = float(event.text)
-                        else:
-                            green_yellow_entry.set_text(float(f"{attract_matrix[1][4]:.2f}"))
+                    except ValueError:
+                        pass
+                elif event.ui_element == green_cyan_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[1][5] = float(event.text)
                     except ValueError:
                         pass
                 
-                if event.ui_element == blue_red_entry:
+                elif event.ui_element == blue_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[2][0] = float(event.text)
-                        else:
-                            blue_red_entry.set_text(float(f"{attract_matrix[2][0]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == blue_green_entry:
+                elif event.ui_element == blue_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[2][1] = float(event.text)
-                        else:
-                            blue_green_entry.set_text(float(f"{attract_matrix[2][1]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == blue_blue_entry:
+                elif event.ui_element == blue_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[2][2] = float(event.text)
-                        else:
-                            blue_blue_entry.set_text(float(f"{attract_matrix[2][2]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == blue_purple_entry:
+                elif event.ui_element == blue_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[2][3] = float(event.text)
-                        else:
-                            blue_purple_entry.set_text(float(f"{attract_matrix[2][3]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == blue_yellow_entry:
+                elif event.ui_element == blue_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[2][4] = float(event.text)
-                        else:
-                            blue_yellow_entry.set_text(float(f"{attract_matrix[2][4]:.2f}"))
+                    except ValueError:
+                        pass
+                elif event.ui_element == blue_cyan_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[2][5] = float(event.text)
                     except ValueError:
                         pass
                 
-                if event.ui_element == purple_red_entry:
+                elif event.ui_element == purple_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[3][0] = float(event.text)
-                        else:
-                            purple_red_entry.set_text(float(f"{attract_matrix[3][0]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == purple_green_entry:
+                elif event.ui_element == purple_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[3][1] = float(event.text)
-                        else:
-                            purple_green_entry.set_text(float(f"{attract_matrix[3][1]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == purple_blue_entry:
+                elif event.ui_element == purple_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[3][2] = float(event.text)
-                        else:
-                            purple_blue_entry.set_text(float(f"{attract_matrix[3][2]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == purple_purple_entry:
+                elif event.ui_element == purple_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[3][3] = float(event.text)
-                        else:
-                            purple_purple_entry.set_text(float(f"{attract_matrix[3][3]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == purple_yellow_entry:
+                elif event.ui_element == purple_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[3][4] = float(event.text)
-                        else:
-                            purple_yellow_entry.set_text(float(f"{attract_matrix[3][4]:.2f}"))
+                    except ValueError:
+                        pass
+                elif event.ui_element == purple_cyan_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[3][5] = float(event.text)
                     except ValueError:
                         pass
                 
-                if event.ui_element == yellow_red_entry:
+                elif event.ui_element == yellow_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[4][0] = float(event.text)
-                        else:
-                            yellow_red_entry.set_text(float(f"{attract_matrix[4][0]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == yellow_green_entry:
+                elif event.ui_element == yellow_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[4][1] = float(event.text)
-                        else:
-                            yellow_green_entry.set_text(float(f"{attract_matrix[4][1]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == yellow_blue_entry:
+                elif event.ui_element == yellow_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[4][2] = float(event.text)
-                        else:
-                            yellow_blue_entry.set_text(float(f"{attract_matrix[4][2]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == yellow_purple_entry:
+                elif event.ui_element == yellow_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[4][3] = float(event.text)
-                        else:
-                            yellow_purple_entry.set_text(float(f"{attract_matrix[4][3]:.2f}"))
                     except ValueError:
                         pass
-                if event.ui_element == yellow_yellow_entry:
+                elif event.ui_element == yellow_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
                             attract_matrix[4][4] = float(event.text)
-                        else:
-                            yellow_yellow_entry.set_text(float(f"{attract_matrix[4][4]:.2f}"))
+                    except ValueError:
+                        pass
+                elif event.ui_element == yellow_cyan_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[4][5] = float(event.text)
+                    except ValueError:
+                        pass
+                
+                elif event.ui_element == cyan_red_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[5][0] = float(event.text)
+                    except ValueError:
+                        pass
+                elif event.ui_element == cyan_green_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[5][1] = float(event.text)
+                    except ValueError:
+                        pass
+                elif event.ui_element == cyan_blue_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[5][2] = float(event.text)
+                    except ValueError:
+                        pass
+                elif event.ui_element == cyan_purple_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[5][3] = float(event.text)
+                    except ValueError:
+                        pass
+                elif event.ui_element == cyan_yellow_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[5][4] = float(event.text)
+                    except ValueError:
+                        pass
+                elif event.ui_element == cyan_cyan_entry:
+                    try:
+                        if float(event.text) >= -1 and float(event.text) <= 1:
+                            attract_matrix[5][5] = float(event.text)
                     except ValueError:
                         pass
                 
@@ -534,7 +604,7 @@ def main():
                     slider_rmax.set_current_value(rmax)
                     text_rmax.set_text(f"rMax: {rmax:.2f}")
 
-                    x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count = make_random_particles(num_particles)
+                    x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count, cyan_count = make_random_particles(num_particles)
 
                 elif event.ui_element == new_matrix_button:
                     attract_matrix = new_matrix(num_colors)
@@ -543,30 +613,42 @@ def main():
                     red_blue_entry.set_text(f"{attract_matrix[0][2]:.2f}")
                     red_purple_entry.set_text(f"{attract_matrix[0][3]:.2f}")
                     red_yellow_entry.set_text(f"{attract_matrix[0][4]:.2f}")
+                    red_cyan_entry.set_text(f"{attract_matrix[0][5]:.2f}")
 
                     green_red_entry.set_text(f"{attract_matrix[1][0]:.2f}")
                     green_green_entry.set_text(f"{attract_matrix[1][1]:.2f}")
                     green_blue_entry.set_text(f"{attract_matrix[1][2]:.2f}")
                     green_purple_entry.set_text(f"{attract_matrix[1][3]:.2f}")
                     green_yellow_entry.set_text(f"{attract_matrix[1][4]:.2f}")
+                    green_cyan_entry.set_text(f"{attract_matrix[1][5]:.2f}")
 
                     blue_red_entry.set_text(f"{attract_matrix[2][0]:.2f}")
                     blue_green_entry.set_text(f"{attract_matrix[2][1]:.2f}")
                     blue_blue_entry.set_text(f"{attract_matrix[2][2]:.2f}")
                     blue_purple_entry.set_text(f"{attract_matrix[2][3]:.2f}")
                     blue_yellow_entry.set_text(f"{attract_matrix[2][4]:.2f}")
+                    blue_cyan_entry.set_text(f"{attract_matrix[2][5]:.2f}")
 
                     purple_red_entry.set_text(f"{attract_matrix[3][0]:.2f}")
                     purple_green_entry.set_text(f"{attract_matrix[3][1]:.2f}")
                     purple_blue_entry.set_text(f"{attract_matrix[3][2]:.2f}")
                     purple_purple_entry.set_text(f"{attract_matrix[3][3]:.2f}")
                     purple_yellow_entry.set_text(f"{attract_matrix[3][4]:.2f}")
+                    purple_cyan_entry.set_text(f"{attract_matrix[3][5]:.2f}")
 
                     yellow_red_entry.set_text(f"{attract_matrix[4][0]:.2f}")
                     yellow_green_entry.set_text(f"{attract_matrix[4][1]:.2f}")
                     yellow_blue_entry.set_text(f"{attract_matrix[4][2]:.2f}")
                     yellow_purple_entry.set_text(f"{attract_matrix[4][3]:.2f}")
                     yellow_yellow_entry.set_text(f"{attract_matrix[4][4]:.2f}")
+                    yellow_cyan_entry.set_text(f"{attract_matrix[4][5]:.2f}")
+
+                    cyan_red_entry.set_text(f"{attract_matrix[5][0]:.2f}")
+                    cyan_green_entry.set_text(f"{attract_matrix[5][1]:.2f}")
+                    cyan_blue_entry.set_text(f"{attract_matrix[5][2]:.2f}")
+                    cyan_purple_entry.set_text(f"{attract_matrix[5][3]:.2f}")
+                    cyan_yellow_entry.set_text(f"{attract_matrix[5][4]:.2f}")
+                    cyan_cyan_entry.set_text(f"{attract_matrix[5][5]:.2f}")
 
             manager.process_events(event)
 
@@ -576,6 +658,7 @@ def main():
         blue_count_entry.set_text(f"{blue_count}")
         purple_count_entry.set_text(f"{purple_count}")
         yellow_count_entry.set_text(f"{yellow_count}")
+        cyan_count_entry.set_text(f"{cyan_count}")
 
         # Fill the background color
         screen.fill(BLACK)
@@ -590,7 +673,7 @@ def main():
         manager.update(dt)        
         manager.draw_ui(panel)
         screen.blit(panel, (0,0))
-        screen.blit(simulation_screen, (300,0))
+        screen.blit(simulation_screen, (panel_size_x,0))
         pygame.display.flip()
 
         # Update particle velocities
@@ -679,6 +762,8 @@ def main():
                     purple_count -=1
                 case(255,255,0):
                     yellow_count -=1
+                case(0,255,255):
+                    cyan_count -=1
             particle_color.pop(i)
             event_timer = 1
 
