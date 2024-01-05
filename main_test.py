@@ -13,18 +13,24 @@ CYAN = (0,255,255)
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 
-screen_size_x = 900
-simulation_size_x = 600
-screen_size_y = 600
+# Screen size parameters
+screen_size_x = 1300
+simulation_size_x = 1000
+screen_size_y = 1000
 panel_size = 300
+
 particle_size = 2
+wall_repel_distance = 30
+
+# Controls frame rate
 rate = 17
 dt = 1/rate
-default_rmax = screen_size_y/10
+
+# Set default values for changeable parameters
+default_rmax = screen_size_y / 10
 default_friction_half_life = 0.04
 default_beta = 0.3
 default_force_factor = 5
-wall_repel_distance = 30
 
 color_dict = {
         RED: 0,
@@ -40,7 +46,7 @@ def force(attraction, scaled_distance, beta):
     Determines the force applied by one particle on another based on their distance apart.
     '''
     if scaled_distance < beta:
-        return 1- (scaled_distance/beta)
+        return 1 - (scaled_distance/beta)
     else:
         return attraction * (1 - abs(2 * scaled_distance - 1 - beta)/ (1 - beta))
 
@@ -71,7 +77,7 @@ def make_random_particles(num_particles):
     purple_count = 0
     yellow_count = 0
 
-    for i in range(num_particles):
+    for _ in range(num_particles):
         x_positions.append(float(random.uniform(0,simulation_size_x)))
         y_positions.append(float(random.uniform(0,screen_size_y)))
         x_velocity.append(0)
@@ -93,10 +99,10 @@ def make_random_particles(num_particles):
 
 def main():
     num_particles = 600
+    num_colors = 5
     rmax = default_rmax
     friction_half_life = default_friction_half_life
     beta = default_beta
-    num_colors = 5
 
     # Control the friction force
     force_factor = default_force_factor
@@ -120,7 +126,7 @@ def main():
     manager = pygame_gui.UIManager((panel_size, screen_size_y), 'theme.json')
 
 
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 580), (300, 20)),
+    credit_line = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 580), (300, 20)),
                                             text="Particle Life, by David Vance, 2024",
                                             manager=manager)
 
@@ -651,13 +657,13 @@ def main():
             x_positions[i] += x_velocity[i]*dt
             y_positions[i] += y_velocity[i]*dt
 
-        # Kill off particles 1 per second
+        # Kill off 1 particles per second
         event_timer -= dt
         if event_timer <= 0:
             num_particles -= 1
             if num_particles == 0:
                 running = False
-            i = int(random.uniform(0, num_particles - 1))
+            i = random.randint(0, num_particles - 1)
             x_positions.pop(i)
             y_positions.pop(i)
             x_velocity.pop(i)
@@ -676,7 +682,6 @@ def main():
             particle_color.pop(i)
             event_timer = 1
 
-        
         # Controls frame rate
         clock.tick(rate)
 
