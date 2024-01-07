@@ -1,15 +1,9 @@
-import numpy as np
+import particle as pt
 import pygame
 import pygame_gui
 import random
 import time
 
-BLUE = (0,0,255)
-RED = (255,0,0)
-GREEN = (0,255,0)
-PURPLE = (255,0,255)
-YELLOW = (255,255,0)
-CYAN = (0,255,255)
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 
@@ -18,14 +12,13 @@ screen_size_x = 1340
 panel_size_x = 340
 simulation_size_x = screen_size_x - panel_size_x
 screen_size_y = 1000
+wall_repel_distance = 30
 
+# GUI Element Top Left positions
 particule_num_y = 10
 button_y = 100
 slider_y = 300
 attraction_matrix_y = 600
-
-particle_size = 2
-wall_repel_distance = 30
 
 # Controls frame rate
 rate = 25
@@ -40,83 +33,15 @@ default_friction_half_life = 0.04
 default_beta = 0.3
 default_force_factor = 5
 
-color_dict = {
-        RED: 0,
-        GREEN: 1,
-        BLUE: 2,
-        PURPLE: 3,
-        YELLOW: 4,
-        CYAN: 5
-    }
-    
-def force(attraction, scaled_distance, beta):
-    '''
-    Determines the force applied by one particle on another based on their distance apart.
-    '''
-    if scaled_distance < beta:
-        return 1 - (scaled_distance/beta)
-    else:
-        return attraction * (1 - abs(2 * scaled_distance - 1 - beta)/ (1 - beta))
-
-def new_matrix(n):
-    '''
-    Generates a matrix of random attraction and repulsion for each pair of colors between -1 and 1.
-    '''
-    attract_matrix = np.ndarray(shape=(n,n), dtype=float)
-    for i in range(n):
-        for j in range(n):
-            attract_matrix[i][j] = random.random()*2 - 1  
-    return attract_matrix  
-
-def make_random_particles(num_particles):
-    '''
-    Takes in a variable num_particles and generates that number of random particles.
-    Returns lists for the positions, velocities and color, and returns the total count 
-    of each color of particle.
-    '''
-    x_positions = []
-    y_positions = []
-    x_velocity = []
-    y_velocity = []
-    particle_color = []
-    red_count = 0
-    green_count = 0
-    blue_count = 0
-    purple_count = 0
-    yellow_count = 0
-    cyan_count = 0
-
-    for _ in range(num_particles):
-        x_positions.append(float(random.uniform(0,simulation_size_x)))
-        y_positions.append(float(random.uniform(0,screen_size_y)))
-        x_velocity.append(0)
-        y_velocity.append(0)
-        color = random.choice([RED, GREEN, BLUE, PURPLE, YELLOW, CYAN])
-        particle_color.append(color)
-        if color == RED:
-            red_count += 1
-        elif color == GREEN:
-            green_count += 1
-        elif color == BLUE:
-            blue_count += 1
-        elif color == PURPLE:
-            purple_count += 1
-        elif color == YELLOW:
-            yellow_count += 1
-        elif color == CYAN:
-            cyan_count += 1
-    
-    return x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count, cyan_count
-
 def main():
-    num_particles = 600
-    num_colors = 6
+    num_particles = 200
     rmax = default_rmax
     friction_half_life = default_friction_half_life
     beta = default_beta
 
     #Measure actual frame_rate
     actual_rate = rate
+    loop_length = 1/rate
 
     # Control the friction force
     force_factor = default_force_factor
@@ -126,9 +51,8 @@ def main():
     event_timer = 1
 
     # Make num_particles number of randomly positioned and colored colors, and randomize an attraction matrx for all colors
-    x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count, cyan_count = make_random_particles(num_particles)
-    attract_matrix = new_matrix(num_colors)
-
+    particles = [pt.Particle() for _ in range(num_particles)]
+    attract_matrix = pt.new_matrix()
 
     pygame.init()
     clock = pygame.time.Clock()
@@ -328,27 +252,27 @@ def main():
     red_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, particule_num_y), (50, 20)),
                                             text="RED", manager=manager)
     red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{red_count}")
+                                                        manager=manager, initial_text=f"{pt.Particle.red_count}")
     green_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, particule_num_y), (50, 20)),
                                             text="GRN", manager=manager)
     green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{green_count}")
+                                                        manager=manager, initial_text=f"{pt.Particle.green_count}")
     blue_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, particule_num_y), (50, 20)),
                                             text="BLU", manager=manager)
     blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{blue_count}")
+                                                        manager=manager, initial_text=f"{pt.Particle.blue_count}")
     purple_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, particule_num_y), (50, 20)),
                                             text="PUR", manager=manager)
     purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{purple_count}")
+                                                        manager=manager, initial_text=f"{pt.Particle.purple_count}")
     yellow_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, particule_num_y), (50, 20)),
                                             text="YEL", manager=manager)
     yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{yellow_count}")
+                                                        manager=manager, initial_text=f"{pt.Particle.yellow_count}")
     cyan_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, particule_num_y), (50, 20)),
                                             text="CYN", manager=manager)
     cyan_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{cyan_count}")
+                                                        manager=manager, initial_text=f"{pt.Particle.cyan_count}")
 
 
     running = True
@@ -618,10 +542,16 @@ def main():
                     slider_rmax.set_current_value(rmax)
                     text_rmax.set_text(f"rMax: {rmax:.2f}")
 
-                    x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count, cyan_count = make_random_particles(num_particles)
+                    pt.Particle.red_count = 0
+                    pt.Particle.green_count = 0
+                    pt.Particle.blue_count = 0
+                    pt.Particle.purple_count = 0
+                    pt.Particle.yellow_count = 0
+                    pt.Particle.cyan_count = 0
+                    particles = [pt.Particle() for _ in range(num_particles)]
 
                 elif event.ui_element == new_matrix_button:
-                    attract_matrix = new_matrix(num_colors)
+                    attract_matrix = pt.new_matrix()
                     red_red_entry.set_text(f"{attract_matrix[0][0]:.2f}")
                     red_green_entry.set_text(f"{attract_matrix[0][1]:.2f}")
                     red_blue_entry.set_text(f"{attract_matrix[0][2]:.2f}")
@@ -667,12 +597,12 @@ def main():
             manager.process_events(event)
 
         # Update particle color numbers
-        red_count_entry.set_text(f"{red_count}")
-        green_count_entry.set_text(f"{green_count}")
-        blue_count_entry.set_text(f"{blue_count}")
-        purple_count_entry.set_text(f"{purple_count}")
-        yellow_count_entry.set_text(f"{yellow_count}")
-        cyan_count_entry.set_text(f"{cyan_count}")
+        red_count_entry.set_text(f"{pt.Particle.red_count}")
+        green_count_entry.set_text(f"{pt.Particle.green_count}")
+        blue_count_entry.set_text(f"{pt.Particle.blue_count}")
+        purple_count_entry.set_text(f"{pt.Particle.purple_count}")
+        yellow_count_entry.set_text(f"{pt.Particle.yellow_count}")
+        cyan_count_entry.set_text(f"{pt.Particle.cyan_count}")
 
         # Fill the background color
         screen.fill(BLACK)
@@ -682,8 +612,8 @@ def main():
         pygame.draw.rect(panel, WHITE, pygame.Rect(0, 0, panel_size_x, screen_size_y), width=3)
 
         # Draw all particles onto the simulation_screen surface
-        for i in range(num_particles):
-            pygame.draw.circle(simulation_screen, particle_color[i], (x_positions[i], y_positions[i]), particle_size)
+        for particle in particles:
+            particle.draw(simulation_screen, simulation_size_x, screen_size_y)
         
         # Update the control panel, draw the control panel, and paste the control panel and simulation surfaces onto the main screen
         manager.update(dt)        
@@ -693,31 +623,20 @@ def main():
         pygame.display.flip()
 
         # Update particle velocities
-        for i in range(num_particles):
+        for particle1 in particles:
             accel_x = 0
             accel_y = 0
-            for j in range(num_particles):
-                if i == j:
+            for particle2 in particles:
+                if particle1 == particle2:
                     continue
                 else:
-                    rx = x_positions[i]-x_positions[j]
-                    if rx <= rmax:
-                        ry = y_positions[i]-y_positions[j]
-                        if ry <= rmax:
-                            r = (rx**2 + ry**2)**(1/2)
-                            if r < rmax:
-                                n = color_dict[particle_color[i]]
-                                m = color_dict[particle_color[j]]
-                                attraction = attract_matrix[n][m]
-                                f = force(attraction, r/rmax, beta)
-                                if r == 0:
-                                    r = .0000001 
-                                accel_x += rx/r * f
-                                accel_y += ry/r * f
+                    fx, fy = particle1.force(particle2, beta, rmax, screen_size_y)
+                    accel_x += fx
+                    accel_y += fy
 
             # Make particles repel off the walls
-            distance_to_right_wall = simulation_size_x - x_positions[i]
-            distance_to_bottom_wall = screen_size_y - y_positions[i]
+            distance_to_right_wall = simulation_size_x - particle1.x
+            distance_to_bottom_wall = screen_size_y - particle1.y
 
             if distance_to_right_wall < wall_repel_distance and distance_to_right_wall > 0:
                 accel_x -= (1.5 - distance_to_right_wall/wall_repel_distance)
@@ -729,59 +648,55 @@ def main():
             elif distance_to_bottom_wall < 0:
                 accel_y -= 1.5 * (1-distance_to_bottom_wall/wall_repel_distance)
 
-            if x_positions[i] < wall_repel_distance and x_positions[i] > 0:
-                accel_x += 1.5 - x_positions[i]/wall_repel_distance
-            elif x_positions[i] < 0:
-                accel_x += 1.5 * (1 - x_positions[i]/wall_repel_distance)
+            if particle1.x < wall_repel_distance and particle1.x > 0:
+                accel_x += 1.5 - particle1.x/wall_repel_distance
+            elif particle1.x < 0:
+                accel_x += 1.5 * (1 - particle1.x/wall_repel_distance)
 
-            if y_positions[i] < wall_repel_distance and y_positions[i] > 0:
-                accel_y += 1.5 - y_positions[i]/wall_repel_distance
-            elif y_positions[i] < 0:
-                accel_y += 1.5 * (1 - y_positions[i]/wall_repel_distance)
+            if particle1.y < wall_repel_distance and particle1.y > 0:
+                accel_y += 1.5 - particle1.y/wall_repel_distance
+            elif particle1.y < 0:
+                accel_y += 1.5 * (1 - particle1.y/wall_repel_distance)
             
             # Scaling factor for the strength of the attraction or repulsion force
             accel_x *= rmax * force_factor
             accel_y *= rmax * force_factor
             
             # Slow the particles down to account for friction
-            x_velocity[i] *= friction_factor
-            y_velocity[i] *= friction_factor
+            particle1.x_vel *= friction_factor
+            particle1.y_vel *= friction_factor
 
             # Update velocity based on x and y acceleration and the time step
-            x_velocity[i] += accel_x * dt
-            y_velocity[i] += accel_y * dt
+            particle1.x_vel += accel_x * loop_length
+            particle1.y_vel += accel_y * loop_length
 
         # Update particle positions based on x and y velocity and the time step
         for i in range(num_particles):
-            x_positions[i] += x_velocity[i]*dt
-            y_positions[i] += y_velocity[i]*dt
+            particle1.x += particle1.x_vel*loop_length
+            particle1.y += particle1.y_vel*loop_length
 
         # Kill off 1 particles per second
         if kill == True:
             event_timer -= dt
             if event_timer <= 0:
-                num_particles -= 1
                 if num_particles == 0:
                     running = False
                 i = random.randint(0, num_particles - 1)
-                x_positions.pop(i)
-                y_positions.pop(i)
-                x_velocity.pop(i)
-                y_velocity.pop(i)
-                match particle_color[i]:
-                    case (255,0,0):
-                        red_count -=1
-                    case (0,255,0):
-                        green_count -=1
-                    case (0,0,255):
-                        blue_count -=1
-                    case(255,0,255):
-                        purple_count -=1
-                    case(255,255,0):
-                        yellow_count -=1
-                    case(0,255,255):
-                        cyan_count -=1
-                particle_color.pop(i)
+                match particles[i]:
+                    case 1:
+                        pt.Particle.red_count -=1
+                    case 2:
+                        pt.Particle.green_count -=1
+                    case 3:
+                        pt.Particle.blue_count -=1
+                    case 4:
+                        pt.Particle.purple_count -=1
+                    case 5:
+                        pt.Particle.yellow_count -=1
+                    case 6:
+                        pt.Particle.cyan_count -=1
+                particles.pop(i)
+                num_particles -= 1
                 event_timer = 1
 
         # Controls frame rate
@@ -789,7 +704,8 @@ def main():
 
         #Determine length of time it took this iteration of the game loop to run and calculate actual FPS
         t1 = time.time()
-        actual_rate = 1/(t1-t0) 
+        loop_length = t1-t0
+        actual_rate = 1/loop_length
         fps_rate.set_text(f"{actual_rate:.2f}")  
 
     pygame.quit()
