@@ -40,24 +40,26 @@ class Particle:
         attract_matrix = np.ndarray(shape=(6, 6), dtype=float)
         for i in range(6):
             for j in range(6):
-                attract_matrix[i][j] = random.random()*2 - 1 
+                attract_matrix[i][j] = random.random() * 2 - 1 
         return attract_matrix 
 
-    def intra_particle_dist(self, other_particle):
+    def intra_particle_dist(self, other_particle, rmax):
         '''
         Determines the distance between two particles.
         '''
-        x_dist = abs(self.x-other_particle.x)
-        y_dist = abs(self.y-other_particle.y)
-        r = (x_dist**2 + y_dist**2)**(1/2)
-        # print(self, other_particle, x_dist, y_dist)
-        return x_dist, y_dist, r
+        x_dist = abs(self.x - other_particle.x)
+        if x_dist < rmax:
+            y_dist = abs(self.y - other_particle.y)
+            if y_dist < rmax:
+                r = (x_dist ** 2 + y_dist ** 2) ** (1 / 2)
+                return x_dist, y_dist, r
+        return 1000,1000,1000
+        
 
-    def force(self, other_particle, r, rmax, beta):
+    def force(self, other_particle, scaled_dist, beta):
         '''
         Determines the force applied by one particle on another based on their distance apart.
         '''
-        scaled_dist = r/rmax
         if scaled_dist < beta:
             return 1 - (scaled_dist/beta)
         elif scaled_dist < 1:

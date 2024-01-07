@@ -34,7 +34,7 @@ default_beta = 0.3
 default_force_factor = 5
 
 def main():
-    num_particles = 450
+    num_particles = 650
 
     # Default values
     rmax = default_rmax
@@ -616,7 +616,7 @@ def main():
             particle.draw(simulation_screen)
         
         # Update the control panel, draw the control panel, and paste the control panel and simulation surfaces onto the main screen
-        manager.update(dt)        
+        manager.update(loop_length)        
         manager.draw_ui(panel)
         screen.blit(panel, (0,0))
         screen.blit(simulation_screen, (panel_size_x,0))
@@ -630,35 +630,37 @@ def main():
                 if particle1 == particle2:
                     continue
                 else:
-                    x_dist, y_dist, r = particle1.intra_particle_dist(particle2)
+                    rx, ry, r = particle1.intra_particle_dist(particle2, default_rmax)
+                    # print("r = ", r, " x_dist = ", x_dist, " y_dist = ", y_dist)
                     if r < rmax:
-                        f = particle1.force(particle2, r, rmax, beta)
-                        accel_x += f * (x_dist/rmax)
-                        accel_y += f * (y_dist/rmax)
+                        f = particle1.force(particle2, r/rmax, beta)
+                        # print("f = ", f)
+                        accel_x += f * (rx/r)
+                        accel_y += f * (ry/r)
 
             # Make particles repel off the walls
             distance_to_right_wall = simulation_size_x - particle1.x
             distance_to_bottom_wall = screen_size_y - particle1.y
 
             if distance_to_right_wall < wall_repel_distance and distance_to_right_wall > 0:
-                accel_x -= (1.5 - distance_to_right_wall/wall_repel_distance)
+                accel_x -= (1.2 - distance_to_right_wall/wall_repel_distance)
             elif distance_to_right_wall < 0:
-                accel_x -= 1.5 * (1 - distance_to_right_wall/wall_repel_distance)
+                accel_x -= 1.2 * (1 - distance_to_right_wall/wall_repel_distance)
 
             if distance_to_bottom_wall < wall_repel_distance and distance_to_bottom_wall > 0:
-                accel_y -= (1.5 - distance_to_bottom_wall/wall_repel_distance)
+                accel_y -= (1.2 - distance_to_bottom_wall/wall_repel_distance)
             elif distance_to_bottom_wall < 0:
-                accel_y -= 1.5 * (1-distance_to_bottom_wall/wall_repel_distance)
+                accel_y -= 1.2 * (1-distance_to_bottom_wall/wall_repel_distance)
 
             if particle1.x < wall_repel_distance and particle1.x > 0:
-                accel_x += 1.5 - particle1.x/wall_repel_distance
+                accel_x += 1.2 - particle1.x/wall_repel_distance
             elif particle1.x < 0:
-                accel_x += 1.5 * (1 - particle1.x/wall_repel_distance)
+                accel_x += 1.2 * (1 - particle1.x/wall_repel_distance)
 
             if particle1.y < wall_repel_distance and particle1.y > 0:
-                accel_y += 1.5 - particle1.y/wall_repel_distance
+                accel_y += 1.2 - particle1.y/wall_repel_distance
             elif particle1.y < 0:
-                accel_y += 1.5 * (1 - particle1.y/wall_repel_distance)
+                accel_y += 1.2 * (1 - particle1.y/wall_repel_distance)
             
             # Scaling factor for the strength of the attraction or repulsion force
             accel_x *= rmax * force_factor
@@ -669,13 +671,13 @@ def main():
             particle1.y_vel *= friction_factor
 
             # Update velocity based on x and y acceleration and the time step
-            particle1.x_vel += accel_x * loop_length
-            particle1.y_vel += accel_y * loop_length
+            particle1.x_vel += (accel_x * loop_length)
+            particle1.y_vel += (accel_y * loop_length)
 
         # Update particle positions based on x and y velocity and the time step
         for particle in particles:
-            particle.x += particle.x_vel*loop_length
-            particle.y += particle.y_vel*loop_length
+            particle.x += (particle.x_vel * loop_length)
+            particle.y += (particle.y_vel * loop_length)
 
         # Kill off 1 particles per second
         if kill == True:
