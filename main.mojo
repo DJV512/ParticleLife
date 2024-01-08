@@ -1,22 +1,34 @@
-from os import execl
-from particle import Particle as pt
-import pygame
-import pygame_gui
-from random import randint
-from sys import executable, argv
-from time import time
+from python import Python
+import random
 
+struct Particle:
+    var x: Float32
+    var y: Float32
+    var x_vel: Float32
+    var y_vel: Float32
+    var size: Int
+    var color: Int
+    var r: Float32
+    var rx: Float32
+    var ry: Float32
+    var red_count: Int
+    var green_count: Int
+    var blue_count: Int
+    var purple_count: Int
+    var yellow_count: Int
+    var cyan_count: Int
+    var COLORS: ListLiteral[Int]
+    var attract_matrix: ListLiteral[ListLiteral[Float32]]
 
-class Particle:
     red_count = 0
     green_count = 0
     blue_count = 0
     purple_count = 0
     yellow_count = 0
     cyan_count = 0
-    COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
-    
-    def __init__(self, simulation_size_x, screen_size_y):
+    COLORS = [(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
+
+    fn __init__(inout self, simulation_size_x: Int, screen_size_y: Int):
         self.x = random.random() * simulation_size_x
         self.y = random.random() * screen_size_y
         self.x_vel = 0
@@ -38,17 +50,16 @@ class Particle:
             Particle.cyan_count += 1
 
     @staticmethod
-    def new_matrix():
+    fn new_matrix() -> ListLiteral[ListLiteral[Float32]]:
         '''
         Generates a matrix of random attraction and repulsion for each pair of colors between -1 and 1.
         '''
-        attract_matrix = np.ndarray(shape=(6, 6), dtype=float)
         for i in range(6):
             for j in range(6):
                 attract_matrix[i][j] = random.random() * 2 - 1 
         return attract_matrix 
 
-    def intra_particle_dist(self, other_particle, rmax):
+    fn intra_particle_dist(inout self, other_particle: Particle, rmax: Float32) -> Float32:
         '''
         Determines the distance between two particles.
         '''
@@ -61,74 +72,85 @@ class Particle:
         return rx, ry, r
 
     @staticmethod
-    def force(attraction, scaled_dist, beta):
+    fn force(attraction: Float32, scaled_dist: Float32, beta: Float32) -> Float32:
         '''
         Determines the force applied by one particle on another based on their distance apart and attraction value.
         '''
         if scaled_dist < beta:
             return 1 - (scaled_dist/beta)
         elif scaled_dist < 1:
-            return attraction * (1 - abs(2 * scaled_dist - 1 - beta)/ (1 - beta))
+            return attraction * (1 - abs(2 * scaled_dist - 1 - beta)/(1 - beta))
 
-    def draw(self, simulation_screen):
+    fn draw(inout self, simulation_screen: Int):
         pygame.draw.circle(simulation_screen, Particle.COLORS[self.color], (self.x, self.y), self.size)
 
+fn main():
+    try:
+        let randint = Python.import_module("random.randint")
+        let executable = Python.import_module("sys.executable")
+        let argv = Python.import_module("sys.argv")
+        let time = Python.import_module("time.time")
+        let pygame = Python.import_module("pygame")
+        let pygame_gui = Python.import_module("pygame_gui")
+        let execl = Python.import_module("os.execl")
+    except:
+        pass
 
-def main():
-    BLACK = (0,0,0)
-    WHITE = (255,255,255)
+    let BLACK: Tuple[Int, Int, Int] = (0,0,0)
+    let WHITE: Tuple[Int, Int, Int] = (255,255,255)
 
     # Screen size parameters
-    screen_size_x = 1340
-    panel_size_x = 340
-    simulation_size_x = screen_size_x - panel_size_x
-    screen_size_y = 1000
-    wall_repel_distance = 30
+    let screen_size_x: Int = 1340
+    let panel_size_x: Int = 340
+    let simulation_size_x: Int = screen_size_x - panel_size_x
+    let screen_size_y: Float32 = 1000.0
+    let wall_repel_distance: Int = 30
 
     # GUI Element Top Left positions
-    particule_num_y = 30
-    button_y = 120
-    dropdown_y = 235
-    slider_y = 280
-    attraction_matrix_y = 550
+    let particule_num_y: Int = 30
+    let button_y: Int = 120
+    let dropdown_y: Int = 235
+    let slider_y: Int = 280
+    let attraction_matrix_y: Int = 550
 
     # Controls frame rate
-    rate = 30
-    dt = 1/rate
+    let rate: Float32 = 30.0
+    let dt: Float32 = 1/rate
 
     #Flag to determine whether particles should die randomly
-    attrition = False
+    var attrition: Bool = False
 
     # Set default values for changeable parameters
-    default_rmax = screen_size_y / 10
-    default_friction_half_life = 0.04
-    default_beta = 0.3
-    default_force_factor = 5
+    let default_rmax: Float32 = screen_size_y / 10
+    let default_friction_half_life: Float32 = 0.04
+    let default_beta: Float32 = 0.3
+    let default_force_factor: Int = 5
 
-    default_num_particles = 500
-    num_particles = default_num_particles
+    let default_num_particles: Int = 500
+    var num_particles: Int = default_num_particles
 
     # Default values
-    rmax = default_rmax
-    friction_half_life = default_friction_half_life
-    beta = default_beta
+    var rmax: Float32 = default_rmax
+    var friction_half_life: Float32 = default_friction_half_life
+    var beta: Float32 = default_beta
     # Control the friction force
-    force_factor = default_force_factor
-    friction_factor = 0.5 ** (dt/friction_half_life)
+    var force_factor: Float32 = default_force_factor
+    var one_half: Float32 = 0.5
+    var friction_factor: Float32 = one_half ** (dt/friction_half_life)
 
     #Measure actual frame_rate
-    actual_rate = rate
-    loop_length = 1/rate
+    var actual_rate: Float32 = rate
+    var loop_length: Float32 = 1/rate
 
     # Timer to ensure that something happens in the simulation every 1 second
-    event_timer = 1
+    var event_timer: Float32 = 1.0
 
     # Make num_particles number of randomly positioned and colored colors, and randomize an attraction matrx for all colors
-    particles = [pt(simulation_size_x, screen_size_y) for _ in range(num_particles)]
-    attract_matrix = pt.new_matrix()
+    var particles: ListLiteral[Particle] = [pt(simulation_size_x, screen_size_y) for _ in range(num_particles)]
+    var attract_matrix: ListLiteral[ListLiteral[Float32]] = Particle.new_matrix()
 
     pygame.init()
-    clock = pygame.time.Clock()
+    var clock: Clock = pygame.time.Clock()
     
     pygame.display.set_caption("Particle Life")
     screen = pygame.display.set_mode([screen_size_x, screen_size_y])
@@ -137,8 +159,8 @@ def main():
     manager = pygame_gui.UIManager((panel_size_x, screen_size_y), 'theme.json')
 
     numbers_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0,particule_num_y-20),(330,20)),
-                                               text="Number of particles of each color",
-                                               manager=manager)
+                                            text="Number of particles of each color",
+                                            manager=manager)
 
     red_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, particule_num_y), (50, 20)),
                                             text="RED", manager=manager)
@@ -183,44 +205,44 @@ def main():
                                             text='Restart Sim', manager=manager)
     
     attrition_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, dropdown_y), (224,25)),
-                                                 text="Particles will randomly die:",
-                                                 manager=manager)
+                                                text="Particles will randomly die:",
+                                                manager=manager)
     attrition_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((250, dropdown_y), (80,25)),
-                                                         options_list=["False", "True"],
-                                                         starting_option="False",
-                                                         manager=manager)
+                                                        options_list=["False", "True"],
+                                                        starting_option="False",
+                                                        manager=manager)
     
     slider_beta = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, slider_y + 20), (300, 20)),
-                                                         start_value=beta, value_range=(0, 1),
-                                                         manager=manager)
+                                                        start_value=beta, value_range=(0, 1),
+                                                        manager=manager)
     text_beta = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((15, slider_y), (300, 20)),
                                             text=f"Beta (how close they can get): {slider_beta.get_current_value():.2f}",
                                             manager=manager)
     slider_friction = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, slider_y + 70), (300, 20)),
-                                                             start_value=friction_half_life, value_range=(0.0001, 3),
-                                                             manager=manager)
+                                                            start_value=friction_half_life, value_range=(0.0001, 3),
+                                                            manager=manager)
     text_friction = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((23, slider_y + 50), (290, 20)),
                                                 text=f"Friction (slow down over time): {slider_friction.get_current_value():.2f}",
                                                 manager=manager)
     slider_force = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, slider_y + 120), (300, 20)),
-                                                          start_value=force_factor, value_range=(0, 50),
-                                                          manager=manager)
+                                                        start_value=force_factor, value_range=(0, 50),
+                                                        manager=manager)
     text_force = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((15, slider_y + 100), (250, 20)),
-                                             text=f"Force (scalar multiple): {slider_force.get_current_value():.2f}",
-                                             manager=manager)
+                                            text=f"Force (scalar multiple): {slider_force.get_current_value():.2f}",
+                                            manager=manager)
     slider_rmax = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, slider_y+170), (300, 20)),
-                                                         start_value=rmax, value_range=(0, screen_size_y) ,
-                                                         manager=manager)
+                                                        start_value=rmax, value_range=(0, screen_size_y) ,
+                                                        manager=manager)
     text_rmax = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((15, slider_y+150), (290, 20)),
                                             text=f"rMax (dist of interaction): {slider_rmax.get_current_value():.2f}",
                                             manager=manager)
 
     interaction_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, attraction_matrix_y-50), (330,20)),
-                                                   text="Forces between colors (changeable)",
-                                                   manager=manager)
+                                                text="Forces between colors (changeable)",
+                                                manager=manager)
     interaction_text2 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, attraction_matrix_y-30), (330,20)),
-                                                   text="Negative attracts, Positive repels",
-                                                   manager=manager)
+                                                text="Negative attracts, Positive repels",
+                                                manager=manager)
 
     red_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,attraction_matrix_y+20),(50,30)),
                                                         manager=manager, initial_text=f"{attract_matrix[0][0]:.2f}")
@@ -749,8 +771,8 @@ def main():
 
             # Update particle velocities
             for particle1 in particles:
-                accel_x = 0
-                accel_y = 0
+                var accel_x: Float32 = 0
+                var accel_y: Float32 = 0
                 for particle2 in particles:
                     if particle1 == particle2:
                         continue
@@ -832,12 +854,9 @@ def main():
         clock.tick(rate)
 
         #Determine length of time it took this iteration of the game loop to run and calculate actual FPS
-        t1 = time()
-        loop_length = t1-t0
+        var t1: Float32 = time()
+        var loop_length: Float32 = t1-t0
         actual_rate = 1/loop_length
         fps_rate.set_text(f"{actual_rate:.2f}")  
 
     pygame.quit()
-
-if __name__ == "__main__":
-    main()
