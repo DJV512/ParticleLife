@@ -9,7 +9,7 @@ class Particle:
     purple_count = 0
     yellow_count = 0
     cyan_count = 0
-    COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (0,255,255), (255,255,0)]
+    COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
     def __init__(self, simulation_size_x, screen_size_y):
         self.x = random.random() * simulation_size_x
@@ -47,25 +47,24 @@ class Particle:
         '''
         Determines the distance between two particles.
         '''
-        x_dist = abs(self.x - other_particle.x)
-        if x_dist < rmax:
-            y_dist = abs(self.y - other_particle.y)
-            if y_dist < rmax:
-                r = (x_dist ** 2 + y_dist ** 2) ** (1 / 2)
-                return x_dist, y_dist, r
-        return 1000,1000,1000
-        
+        r = ry = 1000
+        rx = self.x - other_particle.x
+        if rx < rmax:
+            ry = self.y - other_particle.y
+            if ry < rmax:
+                r = (rx**2 + ry**2)**(1/2)
+        return rx, ry, r
 
-    def force(self, other_particle, scaled_dist, beta):
+        
+    @staticmethod
+    def force(attraction, scaled_dist, beta):
         '''
-        Determines the force applied by one particle on another based on their distance apart.
+        Determines the force applied by one particle on another based on their distance apart and attraction value.
         '''
         if scaled_dist < beta:
             return 1 - (scaled_dist/beta)
         elif scaled_dist < 1:
-            return Particle.attract_matrix[self.color][other_particle.color] * (1 - abs(2 * scaled_dist - 1 - beta)/ (1 - beta))
+            return attraction * (1 - abs(2 * scaled_dist - 1 - beta)/ (1 - beta))
 
     def draw(self, simulation_screen):
-        pygame.draw.circle(simulation_screen, Particle.COLORS[self.color], (self.x, self.y), self.size)  
-
-    attract_matrix = new_matrix()
+        pygame.draw.circle(simulation_screen, Particle.COLORS[self.color], (self.x, self.y), self.size)

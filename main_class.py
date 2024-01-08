@@ -1,3 +1,4 @@
+import icecream
 from particle import Particle as pt
 import pygame
 import pygame_gui
@@ -21,11 +22,11 @@ slider_y = 300
 attraction_matrix_y = 600
 
 # Controls frame rate
-rate = 24
+rate = 17
 dt = 1/rate
 
 #Flag to determine whether particles should die randomly
-kill = False
+kill = True
 
 # Set default values for changeable parameters
 default_rmax = screen_size_y / 10
@@ -34,7 +35,7 @@ default_beta = 0.3
 default_force_factor = 5
 
 def main():
-    num_particles = 650
+    num_particles = 600
 
     # Default values
     rmax = default_rmax
@@ -53,6 +54,7 @@ def main():
 
     # Make num_particles number of randomly positioned and colored colors, and randomize an attraction matrx for all colors
     particles = [pt(simulation_size_x, screen_size_y) for _ in range(num_particles)]
+    attract_matrix = pt.new_matrix()
 
     pygame.init()
     clock = pygame.time.Clock()
@@ -63,13 +65,36 @@ def main():
     panel = pygame.Surface((panel_size_x,screen_size_y))
     manager = pygame_gui.UIManager((panel_size_x, screen_size_y), 'theme.json')
 
-    credit_line = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 970), (300, 20)),
-                                            text="Particle Life, by David Vance, 2024",
-                                            manager=manager)
-    fps_label = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 950), (60, 20)),
-                                            text="FPS: ", manager=manager)
-    fps_rate = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30, 950), (60, 20)),
-                                            text=f"{actual_rate:.2f}", manager=manager)
+    red_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, particule_num_y), (50, 20)),
+                                            text="RED", manager=manager)
+    red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,particule_num_y + 20),(50,30)),
+                                                        manager=manager, initial_text=f"{pt.red_count}")
+    green_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, particule_num_y), (50, 20)),
+                                            text="GRN", manager=manager)
+    green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,particule_num_y + 20),(50,30)),
+                                                        manager=manager, initial_text=f"{pt.green_count}")
+    blue_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, particule_num_y), (50, 20)),
+                                            text="BLU", manager=manager)
+    blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,particule_num_y + 20),(50,30)),
+                                                        manager=manager, initial_text=f"{pt.blue_count}")
+    purple_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, particule_num_y), (50, 20)),
+                                            text="PUR", manager=manager)
+    purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,particule_num_y + 20),(50,30)),
+                                                        manager=manager, initial_text=f"{pt.purple_count}")
+    yellow_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, particule_num_y), (50, 20)),
+                                            text="YEL", manager=manager)
+    yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,particule_num_y + 20),(50,30)),
+                                                        manager=manager, initial_text=f"{pt.yellow_count}")
+    cyan_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, particule_num_y), (50, 20)),
+                                            text="CYN", manager=manager)
+    cyan_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,particule_num_y + 20),(50,30)),
+                                                        manager=manager, initial_text=f"{pt.cyan_count}")
+    total_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, particule_num_y + 55), (50, 20)),
+                                            text="TOTAL", manager=manager)
+    total_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,particule_num_y + 50),(50,30)),
+                                                        manager=manager, initial_text=f"{num_particles}")
+    
+
 
     reset_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, button_y), (120, 30)),
                                             text='Reset', manager=manager)
@@ -100,179 +125,162 @@ def main():
                                             text=f"rMax: {slider_rmax.get_current_value():.2f}",
                                             manager=manager)
     red_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,attraction_matrix_y+20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[0][0]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[0][0]:.2f}")
     red_red_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, attraction_matrix_y), (50, 20)),
                                             text="R-R", manager=manager)
     red_green_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,attraction_matrix_y+20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[0][1]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[0][1]:.2f}")
     red_green_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, attraction_matrix_y), (50, 20)),
                                             text="R-G", manager=manager)
     red_blue_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,attraction_matrix_y+20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[0][2]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[0][2]:.2f}")
     red_blue_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, attraction_matrix_y), (50, 20)),
                                             text="R-B", manager=manager)
     red_purple_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,attraction_matrix_y+20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[0][3]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[0][3]:.2f}")
     red_purple_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, attraction_matrix_y), (50, 20)),
                                             text="R-P", manager=manager)
     red_yellow_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,attraction_matrix_y+20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[0][4]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[0][4]:.2f}")
     red_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, attraction_matrix_y), (50, 20)),
                                             text="R-Y", manager=manager)
     red_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,attraction_matrix_y+20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[0][5]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[0][5]:.2f}")
     red_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, attraction_matrix_y), (50, 20)),
                                             text="R-C", manager=manager)
     
     green_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,attraction_matrix_y+70),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[1][0]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[1][0]:.2f}")
     green_red_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, attraction_matrix_y+50), (50, 20)),
                                             text="G-R", manager=manager)
     green_green_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,attraction_matrix_y+70),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[1][1]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[1][1]:.2f}")
     green_green_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, attraction_matrix_y+50), (50, 20)),
                                             text="G-G", manager=manager)
     green_blue_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,attraction_matrix_y+70),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[1][2]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[1][2]:.2f}")
     green_blue_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, attraction_matrix_y+50), (50, 20)),
                                             text="G-B", manager=manager)
     green_purple_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,attraction_matrix_y+70),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[1][3]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[1][3]:.2f}")
     green_purple_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, attraction_matrix_y+50), (50, 20)),
                                             text="G-P", manager=manager)
     green_yellow_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,attraction_matrix_y+70),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[1][4]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[1][4]:.2f}")
     green_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, attraction_matrix_y+50), (50, 20)),
                                             text="G-Y", manager=manager)
     green_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,attraction_matrix_y+70),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[1][5]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[1][5]:.2f}")
     green_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, attraction_matrix_y+50), (50, 20)),
                                             text="G-C", manager=manager)
 
     blue_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,attraction_matrix_y+120),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[2][0]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[2][0]:.2f}")
     blue_red_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, attraction_matrix_y+100), (50, 20)),
                                             text="B-R", manager=manager)
     blue_green_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,attraction_matrix_y+120),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[2][1]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[2][1]:.2f}")
     blue_green_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, attraction_matrix_y+100), (50, 20)),
                                             text="B-G", manager=manager)
     blue_blue_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,attraction_matrix_y+120),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[2][2]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[2][2]:.2f}")
     blue_blue_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, attraction_matrix_y+100), (50, 20)),
                                             text="B-B", manager=manager)
     blue_purple_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,attraction_matrix_y+120),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[2][3]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[2][3]:.2f}")
     blue_purple_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, attraction_matrix_y+100), (50, 20)),
                                             text="B-P", manager=manager)
     blue_yellow_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,attraction_matrix_y+120),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[2][4]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[2][4]:.2f}")
     blue_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, attraction_matrix_y+100), (50, 20)),
                                             text="B-Y", manager=manager)
     blue_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,attraction_matrix_y+120),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[2][5]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[2][5]:.2f}")
     blue_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, attraction_matrix_y+100), (50, 20)),
                                             text="B-C", manager=manager)
     
     purple_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20, attraction_matrix_y+170),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[3][0]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[3][0]:.2f}")
     purple_red_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, attraction_matrix_y+150), (50, 20)),
                                             text="P-R", manager=manager)
     purple_green_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,attraction_matrix_y+170),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[3][1]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[3][1]:.2f}")
     purple_green_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, attraction_matrix_y+150), (50, 20)),
                                             text="P-G", manager=manager)
     purple_blue_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,attraction_matrix_y+170),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[3][2]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[3][2]:.2f}")
     purple_blue_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, attraction_matrix_y+150), (50, 20)),
                                             text="P-B", manager=manager)
     purple_purple_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,attraction_matrix_y+170),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[3][3]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[3][3]:.2f}")
     purple_purple_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, attraction_matrix_y+150), (50, 20)),
                                             text="P-P", manager=manager)
     purple_yellow_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,attraction_matrix_y+170),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[3][4]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[3][4]:.2f}")
     purple_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, attraction_matrix_y+150), (50, 20)),
                                             text="P-Y", manager=manager)
     purple_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,attraction_matrix_y+170),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[3][5]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[3][5]:.2f}")
     purple_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, attraction_matrix_y+150), (50, 20)),
                                             text="P-C", manager=manager)
     
     yellow_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,attraction_matrix_y+220),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[4][0]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[4][0]:.2f}")
     yellow_red_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, attraction_matrix_y+200), (50, 20)),
                                             text="Y-R", manager=manager)
     yellow_green_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,attraction_matrix_y+220),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[4][1]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[4][1]:.2f}")
     yellow_green_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, attraction_matrix_y+200), (50, 20)),
                                             text="Y-G", manager=manager)
     yellow_blue_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,attraction_matrix_y+220),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[4][2]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[4][2]:.2f}")
     yellow_blue_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, attraction_matrix_y+200), (50, 20)),
                                             text="Y-B", manager=manager)
     yellow_purple_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,attraction_matrix_y+220),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[4][3]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[4][3]:.2f}")
     yellow_purple_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, attraction_matrix_y+200), (50, 20)),
                                             text="Y-P", manager=manager)
     yellow_yellow_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,attraction_matrix_y+220),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[4][4]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[4][4]:.2f}")
     yellow_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, attraction_matrix_y+200), (50, 20)),
                                             text="Y-Y", manager=manager)
     yellow_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,attraction_matrix_y+220),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[4][5]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[4][5]:.2f}")
     yellow_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, attraction_matrix_y+200), (50, 20)),
                                             text="Y-C", manager=manager)
     
     cyan_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,attraction_matrix_y+270),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[5][0]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[5][0]:.2f}")
     cyan_red_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, attraction_matrix_y+250), (50, 20)),
                                             text="C-R", manager=manager)
     cyan_green_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,attraction_matrix_y+270),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[5][1]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[5][1]:.2f}")
     cyan_green_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, attraction_matrix_y+250), (50, 20)),
                                             text="C-G", manager=manager)
     cyan_blue_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,attraction_matrix_y+270),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[5][2]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[5][2]:.2f}")
     cyan_blue_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, attraction_matrix_y+250), (50, 20)),
                                             text="C-B", manager=manager)
     cyan_purple_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,attraction_matrix_y+270),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[5][3]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[5][3]:.2f}")
     cyan_purple_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, attraction_matrix_y+250), (50, 20)),
                                             text="C-P", manager=manager)
     cyan_yellow_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,attraction_matrix_y+270),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[5][4]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[5][4]:.2f}")
     cyan_yellow_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, attraction_matrix_y+250), (50, 20)),
                                             text="C-Y", manager=manager)
     cyan_cyan_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,attraction_matrix_y+270),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.attract_matrix[5][5]:.2f}")
+                                                        manager=manager, initial_text=f"{attract_matrix[5][5]:.2f}")
     cyan_cyan_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, attraction_matrix_y+250), (50, 20)),
-                                            text="C-C", manager=manager)
-    
-    red_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, particule_num_y), (50, 20)),
-                                            text="RED", manager=manager)
-    red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.red_count}")
-    green_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, particule_num_y), (50, 20)),
-                                            text="GRN", manager=manager)
-    green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.green_count}")
-    blue_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, particule_num_y), (50, 20)),
-                                            text="BLU", manager=manager)
-    blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.blue_count}")
-    purple_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, particule_num_y), (50, 20)),
-                                            text="PUR", manager=manager)
-    purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.purple_count}")
-    yellow_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, particule_num_y), (50, 20)),
-                                            text="YEL", manager=manager)
-    yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.yellow_count}")
-    cyan_count_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, particule_num_y), (50, 20)),
-                                            text="CYN", manager=manager)
-    cyan_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,particule_num_y + 20),(50,30)),
-                                                        manager=manager, initial_text=f"{pt.cyan_count}")
+                                                text="C-C", manager=manager)
+
+    credit_line = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 970), (300, 20)),
+                                            text="Particle Life, by David Vance, 2024",
+                                            manager=manager)
+    fps_label = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 950), (60, 20)),
+                                            text="FPS: ", manager=manager)
+    fps_rate = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30, 950), (60, 20)),
+                                            text=f"{actual_rate:.2f}", manager=manager)
 
 
     running = True
@@ -303,222 +311,222 @@ def main():
                 if event.ui_element == red_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[0][0] = float(event.text)
+                            attract_matrix[0][0] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == red_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[0][1] = float(event.text)
+                            attract_matrix[0][1] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == red_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[0][2] = float(event.text)
+                            attract_matrix[0][2] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == red_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[0][3] = float(event.text)
+                            attract_matrix[0][3] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == red_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[0][4] = float(event.text)
+                            attract_matrix[0][4] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == red_cyan_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[0][5] = float(event.text)
+                            attract_matrix[0][5] = float(event.text)
                     except ValueError:
                         pass
                 
                 elif event.ui_element == green_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[1][0] = float(event.text)
+                            attract_matrix[1][0] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == green_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[1][1] = float(event.text)
+                            attract_matrix[1][1] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == green_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[1][2] = float(event.text)
+                            attract_matrix[1][2] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == green_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[1][3] = float(event.text)
+                            attract_matrix[1][3] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == green_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[1][4] = float(event.text)
+                            attract_matrix[1][4] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == green_cyan_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[1][5] = float(event.text)
+                            attract_matrix[1][5] = float(event.text)
                     except ValueError:
                         pass
                 
                 elif event.ui_element == blue_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[2][0] = float(event.text)
+                            attract_matrix[2][0] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == blue_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[2][1] = float(event.text)
+                            attract_matrix[2][1] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == blue_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[2][2] = float(event.text)
+                            attract_matrix[2][2] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == blue_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[2][3] = float(event.text)
+                            attract_matrix[2][3] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == blue_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[2][4] = float(event.text)
+                            attract_matrix[2][4] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == blue_cyan_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[2][5] = float(event.text)
+                            attract_matrix[2][5] = float(event.text)
                     except ValueError:
                         pass
                 
                 elif event.ui_element == purple_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[3][0] = float(event.text)
+                            attract_matrix[3][0] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == purple_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[3][1] = float(event.text)
+                            attract_matrix[3][1] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == purple_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[3][2] = float(event.text)
+                            attract_matrix[3][2] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == purple_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[3][3] = float(event.text)
+                            attract_matrix[3][3] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == purple_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[3][4] = float(event.text)
+                            attract_matrix[3][4] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == purple_cyan_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[3][5] = float(event.text)
+                            attract_matrix[3][5] = float(event.text)
                     except ValueError:
                         pass
                 
                 elif event.ui_element == yellow_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[4][0] = float(event.text)
+                            attract_matrix[4][0] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == yellow_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[4][1] = float(event.text)
+                            attract_matrix[4][1] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == yellow_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[4][2] = float(event.text)
+                            attract_matrix[4][2] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == yellow_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[4][3] = float(event.text)
+                            attract_matrix[4][3] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == yellow_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[4][4] = float(event.text)
+                            attract_matrix[4][4] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == yellow_cyan_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[4][5] = float(event.text)
+                            attract_matrix[4][5] = float(event.text)
                     except ValueError:
                         pass
                 
                 elif event.ui_element == cyan_red_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[5][0] = float(event.text)
+                            attract_matrix[5][0] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == cyan_green_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[5][1] = float(event.text)
+                            attract_matrix[5][1] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == cyan_blue_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[5][2] = float(event.text)
+                            attract_matrix[5][2] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == cyan_purple_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[5][3] = float(event.text)
+                            attract_matrix[5][3] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == cyan_yellow_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[5][4] = float(event.text)
+                            attract_matrix[5][4] = float(event.text)
                     except ValueError:
                         pass
                 elif event.ui_element == cyan_cyan_entry:
                     try:
                         if float(event.text) >= -1 and float(event.text) <= 1:
-                            pt.attract_matrix[5][5] = float(event.text)
+                            attract_matrix[5][5] = float(event.text)
                     except ValueError:
                         pass
                 
@@ -551,48 +559,48 @@ def main():
                     particles = [pt(simulation_size_x, screen_size_y) for _ in range(num_particles)]
 
                 elif event.ui_element == new_matrix_button:
-                    pt.attract_matrix = pt.new_matrix()
-                    red_red_entry.set_text(f"{pt.attract_matrix[0][0]:.2f}")
-                    red_green_entry.set_text(f"{pt.attract_matrix[0][1]:.2f}")
-                    red_blue_entry.set_text(f"{pt.attract_matrix[0][2]:.2f}")
-                    red_purple_entry.set_text(f"{pt.attract_matrix[0][3]:.2f}")
-                    red_yellow_entry.set_text(f"{pt.attract_matrix[0][4]:.2f}")
-                    red_cyan_entry.set_text(f"{pt.attract_matrix[0][5]:.2f}")
+                    attract_matrix = pt.new_matrix()
+                    red_red_entry.set_text(f"{attract_matrix[0][0]:.2f}")
+                    red_green_entry.set_text(f"{attract_matrix[0][1]:.2f}")
+                    red_blue_entry.set_text(f"{attract_matrix[0][2]:.2f}")
+                    red_purple_entry.set_text(f"{attract_matrix[0][3]:.2f}")
+                    red_yellow_entry.set_text(f"{attract_matrix[0][4]:.2f}")
+                    red_cyan_entry.set_text(f"{attract_matrix[0][5]:.2f}")
 
-                    green_red_entry.set_text(f"{pt.attract_matrix[1][0]:.2f}")
-                    green_green_entry.set_text(f"{pt.attract_matrix[1][1]:.2f}")
-                    green_blue_entry.set_text(f"{pt.attract_matrix[1][2]:.2f}")
-                    green_purple_entry.set_text(f"{pt.attract_matrix[1][3]:.2f}")
-                    green_yellow_entry.set_text(f"{pt.attract_matrix[1][4]:.2f}")
-                    green_cyan_entry.set_text(f"{pt.attract_matrix[1][5]:.2f}")
+                    green_red_entry.set_text(f"{attract_matrix[1][0]:.2f}")
+                    green_green_entry.set_text(f"{attract_matrix[1][1]:.2f}")
+                    green_blue_entry.set_text(f"{attract_matrix[1][2]:.2f}")
+                    green_purple_entry.set_text(f"{attract_matrix[1][3]:.2f}")
+                    green_yellow_entry.set_text(f"{attract_matrix[1][4]:.2f}")
+                    green_cyan_entry.set_text(f"{attract_matrix[1][5]:.2f}")
 
-                    blue_red_entry.set_text(f"{pt.attract_matrix[2][0]:.2f}")
-                    blue_green_entry.set_text(f"{pt.attract_matrix[2][1]:.2f}")
-                    blue_blue_entry.set_text(f"{pt.attract_matrix[2][2]:.2f}")
-                    blue_purple_entry.set_text(f"{pt.attract_matrix[2][3]:.2f}")
-                    blue_yellow_entry.set_text(f"{pt.attract_matrix[2][4]:.2f}")
-                    blue_cyan_entry.set_text(f"{pt.attract_matrix[2][5]:.2f}")
+                    blue_red_entry.set_text(f"{attract_matrix[2][0]:.2f}")
+                    blue_green_entry.set_text(f"{attract_matrix[2][1]:.2f}")
+                    blue_blue_entry.set_text(f"{attract_matrix[2][2]:.2f}")
+                    blue_purple_entry.set_text(f"{attract_matrix[2][3]:.2f}")
+                    blue_yellow_entry.set_text(f"{attract_matrix[2][4]:.2f}")
+                    blue_cyan_entry.set_text(f"{attract_matrix[2][5]:.2f}")
 
-                    purple_red_entry.set_text(f"{pt.attract_matrix[3][0]:.2f}")
-                    purple_green_entry.set_text(f"{pt.attract_matrix[3][1]:.2f}")
-                    purple_blue_entry.set_text(f"{pt.attract_matrix[3][2]:.2f}")
-                    purple_purple_entry.set_text(f"{pt.attract_matrix[3][3]:.2f}")
-                    purple_yellow_entry.set_text(f"{pt.attract_matrix[3][4]:.2f}")
-                    purple_cyan_entry.set_text(f"{pt.attract_matrix[3][5]:.2f}")
+                    purple_red_entry.set_text(f"{attract_matrix[3][0]:.2f}")
+                    purple_green_entry.set_text(f"{attract_matrix[3][1]:.2f}")
+                    purple_blue_entry.set_text(f"{attract_matrix[3][2]:.2f}")
+                    purple_purple_entry.set_text(f"{attract_matrix[3][3]:.2f}")
+                    purple_yellow_entry.set_text(f"{attract_matrix[3][4]:.2f}")
+                    purple_cyan_entry.set_text(f"{attract_matrix[3][5]:.2f}")
 
-                    yellow_red_entry.set_text(f"{pt.attract_matrix[4][0]:.2f}")
-                    yellow_green_entry.set_text(f"{pt.attract_matrix[4][1]:.2f}")
-                    yellow_blue_entry.set_text(f"{pt.attract_matrix[4][2]:.2f}")
-                    yellow_purple_entry.set_text(f"{pt.attract_matrix[4][3]:.2f}")
-                    yellow_yellow_entry.set_text(f"{pt.attract_matrix[4][4]:.2f}")
-                    yellow_cyan_entry.set_text(f"{pt.attract_matrix[4][5]:.2f}")
+                    yellow_red_entry.set_text(f"{attract_matrix[4][0]:.2f}")
+                    yellow_green_entry.set_text(f"{attract_matrix[4][1]:.2f}")
+                    yellow_blue_entry.set_text(f"{attract_matrix[4][2]:.2f}")
+                    yellow_purple_entry.set_text(f"{attract_matrix[4][3]:.2f}")
+                    yellow_yellow_entry.set_text(f"{attract_matrix[4][4]:.2f}")
+                    yellow_cyan_entry.set_text(f"{attract_matrix[4][5]:.2f}")
 
-                    cyan_red_entry.set_text(f"{pt.attract_matrix[5][0]:.2f}")
-                    cyan_green_entry.set_text(f"{pt.attract_matrix[5][1]:.2f}")
-                    cyan_blue_entry.set_text(f"{pt.attract_matrix[5][2]:.2f}")
-                    cyan_purple_entry.set_text(f"{pt.attract_matrix[5][3]:.2f}")
-                    cyan_yellow_entry.set_text(f"{pt.attract_matrix[5][4]:.2f}")
-                    cyan_cyan_entry.set_text(f"{pt.attract_matrix[5][5]:.2f}")
+                    cyan_red_entry.set_text(f"{attract_matrix[5][0]:.2f}")
+                    cyan_green_entry.set_text(f"{attract_matrix[5][1]:.2f}")
+                    cyan_blue_entry.set_text(f"{attract_matrix[5][2]:.2f}")
+                    cyan_purple_entry.set_text(f"{attract_matrix[5][3]:.2f}")
+                    cyan_yellow_entry.set_text(f"{attract_matrix[5][4]:.2f}")
+                    cyan_cyan_entry.set_text(f"{attract_matrix[5][5]:.2f}")
 
             manager.process_events(event)
 
@@ -603,6 +611,7 @@ def main():
         purple_count_entry.set_text(f"{pt.purple_count}")
         yellow_count_entry.set_text(f"{pt.yellow_count}")
         cyan_count_entry.set_text(f"{pt.cyan_count}")
+        total_count_entry.set_text(f"{num_particles}")
 
         # Fill the background color
         screen.fill(BLACK)
@@ -631,12 +640,12 @@ def main():
                     continue
                 else:
                     rx, ry, r = particle1.intra_particle_dist(particle2, default_rmax)
-                    # print("r = ", r, " x_dist = ", x_dist, " y_dist = ", y_dist)
                     if r < rmax:
-                        f = particle1.force(particle2, r/rmax, beta)
-                        # print("f = ", f)
-                        accel_x += f * (rx/r)
-                        accel_y += f * (ry/r)
+                        f = pt.force(attract_matrix[particle1.color][particle2.color], r/rmax, beta)
+                        if r == 0:
+                            r = 0.00001
+                        accel_x += rx/r * f
+                        accel_y += ry/r * f
 
             # Make particles repel off the walls
             distance_to_right_wall = simulation_size_x - particle1.x
@@ -671,13 +680,13 @@ def main():
             particle1.y_vel *= friction_factor
 
             # Update velocity based on x and y acceleration and the time step
-            particle1.x_vel += (accel_x * loop_length)
-            particle1.y_vel += (accel_y * loop_length)
+            particle1.x_vel += (accel_x * dt)
+            particle1.y_vel += (accel_y * dt)
 
-        # Update particle positions based on x and y velocity and the time step
+        # Update all particle positions based on x and y velocity and the time step
         for particle in particles:
-            particle.x += (particle.x_vel * loop_length)
-            particle.y += (particle.y_vel * loop_length)
+            particle.x += (particle.x_vel * dt)
+            particle.y += (particle.y_vel * dt)
 
         # Kill off 1 particles per second
         if kill == True:
@@ -686,18 +695,18 @@ def main():
                 if num_particles == 0:
                     running = False
                 i = random.randint(0, num_particles - 1)
-                match particles[i]:
-                    case 1:
+                match particles[i].color:
+                    case 0:
                         pt.red_count -=1
-                    case 2:
+                    case 1:
                         pt.green_count -=1
-                    case 3:
+                    case 2:
                         pt.blue_count -=1
-                    case 4:
+                    case 3:
                         pt.purple_count -=1
-                    case 5:
+                    case 4:
                         pt.yellow_count -=1
-                    case 6:
+                    case 5:
                         pt.cyan_count -=1
                 particles.pop(i)
                 num_particles -= 1
