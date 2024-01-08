@@ -26,16 +26,17 @@ rate = 17
 dt = 1/rate
 
 #Flag to determine whether particles should die randomly
-kill = True
+attrition = False
 
 # Set default values for changeable parameters
 default_rmax = screen_size_y / 10
 default_friction_half_life = 0.04
 default_beta = 0.3
 default_force_factor = 5
+default_num_particles = 600
 
 def main():
-    num_particles = 600
+    num_particles = default_num_particles
 
     # Default values
     rmax = default_rmax
@@ -556,6 +557,8 @@ def main():
                     pt.purple_count = 0
                     pt.yellow_count = 0
                     pt.cyan_count = 0
+                    total_count = 0
+                    num_particles = default_num_particles
                     particles = [pt(simulation_size_x, screen_size_y) for _ in range(num_particles)]
 
                 elif event.ui_element == new_matrix_button:
@@ -689,7 +692,7 @@ def main():
             particle.y += (particle.y_vel * dt)
 
         # Kill off 1 particles per second
-        if kill == True:
+        if attrition == True:
             event_timer -= dt
             if event_timer <= 0:
                 if num_particles == 0:

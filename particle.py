@@ -16,8 +16,8 @@ class Particle:
         self.y = random.random() * screen_size_y
         self.x_vel = 0
         self.y_vel = 0
-        self.size = 2
-        # self.size = random.choice([1,2,3,4,5,6])
+        # self.size = 2
+        self.size = random.choice([1,2,3,4,5,6])
         self.color = random.choice([0,1,2,3,4,5])
         if self.color == 0:
             Particle.red_count += 1
@@ -55,7 +55,6 @@ class Particle:
                 r = (rx**2 + ry**2)**(1/2)
         return rx, ry, r
 
-        
     @staticmethod
     def force(attraction, scaled_dist, beta):
         '''
