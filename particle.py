@@ -11,14 +11,18 @@ class Particle:
     cyan_count = 0
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, simulation_size_x, screen_size_y):
+    def __init__(self, simulation_size_x, screen_size_y, color=None):
         self.x = random.random() * simulation_size_x
         self.y = random.random() * screen_size_y
         self.x_vel = 0
         self.y_vel = 0
+        self.neighbors = 0
         self.size = 2
         # self.size = random.choice([1,2,3,4,5,6])
-        self.color = random.choice([0,1,2,3,4,5])
+        if color == None:
+            self.color = random.choice([0,1,2,3,4,5])
+        else:
+            self.color = color
         if self.color == 0:
             Particle.red_count += 1
         elif self.color == 1:
