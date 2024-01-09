@@ -2,7 +2,7 @@ from os import execl
 from particle import Particle as pt
 import pygame
 import pygame_gui
-from random import randint
+from random import randint, shuffle, random
 from sys import executable, argv
 from time import time
 
@@ -31,13 +31,16 @@ def main():
 
     # Flag to determine whether particles should die randomly
     attrition = False
-    evolution = False
+    evolution = True
 
     # Distance to neighbors, for evolution purposes
-    neighbor_dist = 20
+    neighbor_dist = 25
 
     # Number of neighbors within neighbor_dist that triggers reproduction
-    neighbor_num = 9
+    neighbor_num = 6
+
+    # Number of loops before a particle dies
+    life_expect_loops = 750
 
     # Set default values for changeable parameters
     default_rmax = screen_size_y / 10
@@ -45,7 +48,7 @@ def main():
     default_beta = 0.3
     default_force_factor = 5
 
-    default_num_particles = 300
+    default_num_particles = 250
     num_particles = default_num_particles
 
     # Default values
@@ -64,10 +67,10 @@ def main():
     attrition_timer = 1
 
     # Timer to control evolution
-    evolution_timer = 5
+    evolution_timer = 10
 
     # Make num_particles number of randomly positioned and colored colors, and randomize an attraction matrx for all colors
-    particles = [pt(simulation_size_x, screen_size_y) for _ in range(num_particles)]
+    particles = [pt() for _ in range(num_particles)]
     attract_matrix = pt.new_matrix()
 
     pygame.init()
@@ -138,7 +141,7 @@ def main():
                                                  manager=manager)
     evolution_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((250, dropdown_y + 30), (80,25)),
                                                          options_list=["False", "True"],
-                                                         starting_option="False",
+                                                         starting_option="True",
                                                          manager=manager)
     
     slider_beta = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, slider_y + 20), (300, 20)),
@@ -704,9 +707,11 @@ def main():
             pygame.display.flip()
 
             # Update particle velocities
-            no_neighbors = []
             many_neighbors = []
+            old_particles = []
             for particle1 in particles:
+                if particle1.age > life_expect_loops:
+                    old_particles.append(particle1)
                 accel_x = 0
                 accel_y = 0
                 particle1.neighbors = 0
@@ -724,34 +729,34 @@ def main():
                             accel_x += rx/r * f
                             accel_y += ry/r * f
 
-                if particle1.neighbors == 0:
-                    no_neighbors.append(particle1)
-                elif particle1.neighbors > neighbor_num:
+                if particle1.neighbors > neighbor_num:
                     many_neighbors.append(particle1)
+                
+                particle1.age += 1
 
                 # Make particles repel off the walls
                 distance_to_right_wall = simulation_size_x - particle1.x
                 distance_to_bottom_wall = screen_size_y - particle1.y
 
                 if distance_to_right_wall < wall_repel_distance and distance_to_right_wall > 0:
-                    accel_x -= (1.2 - distance_to_right_wall/wall_repel_distance)
+                    accel_x -= (1.5 - distance_to_right_wall/wall_repel_distance)
                 elif distance_to_right_wall < 0:
-                    accel_x -= 1.2 * (1 - distance_to_right_wall/wall_repel_distance)
+                    accel_x -= 1.5 * (1 - distance_to_right_wall/wall_repel_distance)
 
                 if distance_to_bottom_wall < wall_repel_distance and distance_to_bottom_wall > 0:
-                    accel_y -= (1.2 - distance_to_bottom_wall/wall_repel_distance)
+                    accel_y -= (1.5 - distance_to_bottom_wall/wall_repel_distance)
                 elif distance_to_bottom_wall < 0:
-                    accel_y -= 1.2 * (1-distance_to_bottom_wall/wall_repel_distance)
+                    accel_y -= 1.5 * (1-distance_to_bottom_wall/wall_repel_distance)
 
                 if particle1.x < wall_repel_distance and particle1.x > 0:
-                    accel_x += 1.2 - particle1.x/wall_repel_distance
+                    accel_x += 1.5 - particle1.x/wall_repel_distance
                 elif particle1.x < 0:
-                    accel_x += 1.2 * (1 - particle1.x/wall_repel_distance)
+                    accel_x += 1.5 * (1 - particle1.x/wall_repel_distance)
 
                 if particle1.y < wall_repel_distance and particle1.y > 0:
-                    accel_y += 1.2 - particle1.y/wall_repel_distance
+                    accel_y += 1.5 - particle1.y/wall_repel_distance
                 elif particle1.y < 0:
-                    accel_y += 1.2 * (1 - particle1.y/wall_repel_distance)
+                    accel_y += 1.5 * (1 - particle1.y/wall_repel_distance)
                 
                 # Scaling factor for the strength of the attraction or repulsion force
                 accel_x *= rmax * force_factor
@@ -794,35 +799,36 @@ def main():
                     num_particles -= 1
                     attrition_timer = 1
             
+            # Evolves particles. They die with age, and reproduce if they maintain many neighbors
             if evolution:
                 evolution_timer -= dt
                 if evolution_timer <= 0:
-                    no_neighbors_len = len(no_neighbors)
+                    for particle in old_particles:
+                        if random() < 0.05:
+                            match particle.color:
+                                case 0:
+                                    pt.red_count -=1
+                                case 1:
+                                    pt.green_count -=1
+                                case 2:
+                                    pt.blue_count -=1
+                                case 3:
+                                    pt.purple_count -=1
+                                case 4:
+                                    pt.yellow_count -=1
+                                case 5:
+                                    pt.cyan_count -=1
+                            particles.remove(particle)
+                            num_particles -= 1
                     many_neighbors_len = len(many_neighbors)
-                    if num_particles == 0:
-                        running = False
-                    if no_neighbors_len > 0:
-                        i = randint(0, no_neighbors_len - 1)
-                        match particles[i].color:
-                            case 0:
-                                pt.red_count -=1
-                            case 1:
-                                pt.green_count -=1
-                            case 2:
-                                pt.blue_count -=1
-                            case 3:
-                                pt.purple_count -=1
-                            case 4:
-                                pt.yellow_count -=1
-                            case 5:
-                                pt.cyan_count -=1
-                        particles.pop(i)
-                        num_particles -= 1
                     if many_neighbors_len > 0:
-                        for i in range(0, many_neighbors_len-1, 5):
-                            new_particle = pt(simulation_size_x, screen_size_y, many_neighbors[i].color)
+                        shuffle(many_neighbors)
+                        for i in range(0, many_neighbors_len, 5):
+                            new_particle = pt(many_neighbors[i].x, many_neighbors[i].y, many_neighbors[i].color)
                             particles.append(new_particle)
                             num_particles += 1
+                    if num_particles == 0:
+                        running = False
                     evolution_timer = 5
 
         # Controls frame rate
