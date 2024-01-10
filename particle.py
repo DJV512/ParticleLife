@@ -11,7 +11,7 @@ class Particle:
     cyan_count = 0
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, color=None):
+    def __init__(self, x=None, y=None, color=None, size=None):
         if x == None:
             self.x = random.random() * 1000
         else:
@@ -24,8 +24,11 @@ class Particle:
         self.y_vel = 0
         self.neighbors = 0
         self.age = 0
-        self.size = 2
-        # self.size = random.choice([1,2,3,4,5,6])
+        # self.size = 4
+        if size == None:
+            self.size = random.choice([1,2,3,4,5,6])
+        else:
+            self.size = size
         if color == None:
             self.color = random.choice([0,1,2,3,4,5])
         else:
@@ -64,6 +67,7 @@ class Particle:
             ry = self.y - other_particle.y
             if ry < rmax:
                 r = (rx**2 + ry**2)**(1/2)
+                r -= self.size - other_particle.size
         return rx, ry, r
 
     @staticmethod
@@ -72,7 +76,7 @@ class Particle:
         Determines the force applied by one particle on another based on their distance apart and attraction value.
         '''
         if scaled_dist < beta:
-            return 1 - (scaled_dist/beta)
+            return 2 - (scaled_dist/beta)
         elif scaled_dist < 1:
             return attraction * (1 - abs(2 * scaled_dist - 1 - beta)/ (1 - beta))
 

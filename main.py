@@ -1,3 +1,5 @@
+from datetime import datetime
+import json
 from os import execl
 from particle import Particle as pt
 import pygame
@@ -5,6 +7,17 @@ import pygame_gui
 from random import randint, shuffle, random
 from sys import executable, argv
 from time import time
+
+
+def wait_for_click():
+    pygame.event.clear()
+    while True:
+        event = pygame.event.wait()
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            return
+        if event.type == pygame.KEYDOWN:
+            return
 
 
 def main():
@@ -18,6 +31,7 @@ def main():
     screen_size_y = 1000
     wall_repel_distance = 5
     wall_repel_strength = 3
+    particle_repel_force = 3
 
     # GUI Element Top Left positions
     particule_num_y = 30
@@ -25,6 +39,8 @@ def main():
     dropdown_y = 235
     slider_y = 310
     attraction_matrix_y = 580
+    save_load_y = 890
+    footer_y = 930
 
     # Controls frame rate
     rate = 60
@@ -47,7 +63,7 @@ def main():
     # Set default values for changeable parameters
     default_rmax = screen_size_y / 10
     default_friction_half_life = 0.04
-    default_beta = 0.3
+    default_beta = 0.1
     default_force_factor = 5
 
     # Starting number of particle defaults
@@ -71,7 +87,8 @@ def main():
     attrition_timer = 1
 
     # Timer to control evolution, if true
-    evolution_timer = 10
+    default_evolution_timer = 10
+    evolution_timer = default_evolution_timer
 
     # Make num_particles number of randomly positioned and colored parrticles
     particles = [pt() for _ in range(num_particles)]
@@ -335,25 +352,30 @@ def main():
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, attraction_matrix_y+250), (50, 20)),
                                                 text="C-C", manager=manager)
 
+    save_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((30, save_load_y), (140, 30)),
+                                            text='Save Sim', manager=manager)
+    load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, save_load_y), (140, 30)),
+                                            text='Load Sim', manager=manager)
 
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 930), (158, 20)),
+
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, footer_y), (158, 20)),
                                 text="Oldest Particle: ", manager=manager)
-    oldest_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((130, 930), (60, 20)),
+    oldest_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((130, footer_y), (60, 20)),
                                            text=f"{oldest_particle}", manager=manager)
 
 
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 950), (60, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, footer_y+20), (60, 20)),
                                 text="FPS: ", manager=manager)
-    fps_rate = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30, 950), (60, 20)),
+    fps_rate = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30, footer_y+20), (60, 20)),
                                            text=f"{actual_rate:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((110, 950), (130, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((110, footer_y+20), (130, 20)),
                                 text="Number of Loops: ", manager=manager)
 
-    loops_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((240, 950), (40, 20)),
+    loops_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((240, footer_y+20), (40, 20)),
                                              text=f"{total_num_loops}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 970), (300, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, footer_y+40), (300, 20)),
                                 text="Particle Life, by David Vance, 2024",
                                 manager=manager)
 
@@ -699,6 +721,89 @@ def main():
                 elif event.ui_element == restart_all_button:
                     execl(executable, executable, *argv)
 
+                elif event.ui_element == save_button:
+                    game_settings = {
+                        "parameters": {
+                            "wall_repel_distance": wall_repel_distance,
+                            "wall_repel_strength": wall_repel_strength,
+                            "particle_repel_force": particle_repel_force,
+                            "rate": rate,
+                            "attrition": attrition,
+                            "evolution": evolution,
+                            "neighbor_dist": neighbor_dist,
+                            "neighbor_num": neighbor_num,
+                            "life_expect_loops": life_expect_loops,
+                            "rmax": rmax,
+                            "friction_half_life": friction_half_life,
+                            "beta": beta,
+                            "force_factor": force_factor,
+                            "attrition_timer": attrition_timer,
+                            "evolution_timer": default_evolution_timer,
+                            "red_count": pt.red_count,
+                            "green_count": pt.green_count,
+                            "blue_count": pt.blue_count,
+                            "purple_count": pt.purple_count,
+                            "yellow_count": pt.yellow_count,
+                            "cyan_count": pt.cyan_count,
+                            "num_particles": num_particles,
+                        },
+
+                        "particle_data": [(part.x, part.y, part.x_vel, part.y_vel, part.age, part.size, part.color) for part in particles],
+
+                        "attract_matrix": {
+                            "red_red": attract_matrix[0][0],
+                            "red_green": attract_matrix[0][1],
+                            "red_blue": attract_matrix[0][2],
+                            "red_purple": attract_matrix[0][3],
+                            "red_yellow": attract_matrix[0][4],
+                            "red_cyan": attract_matrix[0][5],
+                            "green_red": attract_matrix[1][0],
+                            "green_green": attract_matrix[1][1],
+                            "green_blue": attract_matrix[1][2],
+                            "green_purple": attract_matrix[1][3],
+                            "green_yellow": attract_matrix[1][4],
+                            "green_cyan": attract_matrix[1][5],
+                            "blue_red": attract_matrix[2][0],
+                            "blue_green": attract_matrix[2][1],
+                            "blue_blue": attract_matrix[2][2],
+                            "blue_purple": attract_matrix[2][3],
+                            "blue_yellow": attract_matrix[2][4],
+                            "blue_cyan": attract_matrix[2][5],
+                            "purple_red": attract_matrix[3][0],
+                            "purple_green": attract_matrix[3][1],
+                            "purple_blue": attract_matrix[3][2],
+                            "purple_purple": attract_matrix[3][3],
+                            "purple_yellow": attract_matrix[3][4],
+                            "purple_cyan": attract_matrix[3][5],
+                            "yellow_red": attract_matrix[4][0],
+                            "yellow_green": attract_matrix[4][1],
+                            "yellow_blue": attract_matrix[4][2],
+                            "yellow_purple": attract_matrix[4][3],
+                            "yellow_yellow": attract_matrix[4][4],
+                            "yellow_cyan": attract_matrix[4][5],
+                            "cyan_red": attract_matrix[5][0],
+                            "cyan_green": attract_matrix[5][1],
+                            "cyan_blue": attract_matrix[5][2],
+                            "cyan_purple": attract_matrix[5][3],
+                            "cyan_yellow": attract_matrix[5][4],
+                            "cyan_cyan": attract_matrix[5][5],
+                        },
+                    }
+                    right_now = datetime.now()
+                    with open(f"{right_now}_save.json", "w") as f:
+                        json.dump(game_settings, f)
+                    
+                    font = pygame.font.Font(None, 36)
+                    text = font.render("Game saved! Press any key to continue.", True, (0,0,0))
+                    text_rect = text.get_rect(center=(850,500))
+                    pygame.draw.rect(screen, (255,255,255), ((text_rect.x, text_rect.y), (480, 30)))
+                    screen.blit(text, text_rect)
+                    pygame.display.flip()
+                    wait_for_click()
+                    
+
+
+
             manager.process_events(event)
 
         # Where the magic happens
@@ -751,12 +856,21 @@ def main():
                         rx, ry, r = particle1.intra_particle_dist(particle2, default_rmax)
                         if r < neighbor_dist:
                             particle1.neighbors += 1
-                        if r < rmax:
-                            f = pt.force(attract_matrix[particle1.color][particle2.color], r/rmax, beta)
+                        if r < rmax and r > 0:
+                            f = pt.force(attract_matrix[particle1.color][particle2.color], r/rmax, beta) * particle2.size
                             if r == 0:
                                 r = 0.00001
                             accel_x += rx/r * f
                             accel_y += ry/r * f
+                        elif r < 0:
+                            if rx > 0:
+                                accel_x += particle_repel_force
+                            else:
+                                accel_x -= particle_repel_force
+                            if ry > 0:
+                                accel_y += particle_repel_force
+                            if ry < 0:
+                                accel_y -= particle_repel_force
 
                 if particle1.neighbors > neighbor_num:
                     many_neighbors.append(particle1)
@@ -855,7 +969,7 @@ def main():
                     # 15% of particles with many neighbors will reproduce
                     for particle in many_neighbors:
                         if random() < 0.15:
-                            new_particle = pt(particle.x, particle.y, particle.color)
+                            new_particle = pt(particle.x, particle.y, particle.color, particle.size)
                             particles.append(new_particle)
                             num_particles += 1
 
@@ -864,7 +978,7 @@ def main():
                         running = False
 
                     # Reset timer for next evolution step
-                    evolution_timer = 5
+                    evolution_timer = default_evolution_timer
 
         # Controls maximum frame rate
         clock.tick(rate)
