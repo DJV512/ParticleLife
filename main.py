@@ -16,7 +16,8 @@ def main():
     panel_size_x = 340
     simulation_size_x = screen_size_x - panel_size_x
     screen_size_y = 1000
-    wall_repel_distance = 30
+    wall_repel_distance = 5
+    wall_repel_strength = 3
 
     # GUI Element Top Left positions
     particule_num_y = 30
@@ -26,7 +27,7 @@ def main():
     attraction_matrix_y = 580
 
     # Controls frame rate
-    rate = 30
+    rate = 60
     dt = 1/rate
 
     # Flag to determine whether particles should die randomly
@@ -41,6 +42,7 @@ def main():
 
     # Number of loops before a particle dies
     life_expect_loops = 750
+    total_num_loops = 0
 
     # Set default values for changeable parameters
     default_rmax = screen_size_y / 10
@@ -48,8 +50,10 @@ def main():
     default_beta = 0.3
     default_force_factor = 5
 
-    default_num_particles = 250
+    # Starting number of particle defaults
+    default_num_particles = 300
     num_particles = default_num_particles
+    oldest_particle = 0
 
     # Default values
     rmax = default_rmax
@@ -59,29 +63,34 @@ def main():
     force_factor = default_force_factor
     friction_factor = 0.5 ** (dt/friction_half_life)
 
-    #Measure actual frame_rate
+    # Variables to measure the actual frame_rate
     actual_rate = rate
     loop_length = 1/rate
 
-    # Timer to ensure that particles die every 1 second
+    # Timer for particle attrition, if true
     attrition_timer = 1
 
-    # Timer to control evolution
+    # Timer to control evolution, if true
     evolution_timer = 10
 
-    # Make num_particles number of randomly positioned and colored colors, and randomize an attraction matrx for all colors
+    # Make num_particles number of randomly positioned and colored parrticles
     particles = [pt() for _ in range(num_particles)]
+
+    # Randomize an attraction matrix for all colors
     attract_matrix = pt.new_matrix()
 
+    # Initialize the game and set the clock
     pygame.init()
     clock = pygame.time.Clock()
     
+    # Window size and options
     pygame.display.set_caption("Particle Life")
     screen = pygame.display.set_mode([screen_size_x, screen_size_y])
     simulation_screen = pygame.Surface((simulation_size_x, screen_size_y))
     panel = pygame.Surface((panel_size_x,screen_size_y))
     manager = pygame_gui.UIManager((panel_size_x, screen_size_y), 'theme.json')
 
+    # Control panel text and values
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0,particule_num_y-20),(330,20)),
                                                text="Number of particles of each color",
                                                manager=manager)
@@ -326,15 +335,29 @@ def main():
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, attraction_matrix_y+250), (50, 20)),
                                                 text="C-C", manager=manager)
 
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 970), (300, 20)),
-                                            text="Particle Life, by David Vance, 2024",
-                                            manager=manager)
+
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 930), (158, 20)),
+                                text="Oldest Particle: ", manager=manager)
+    oldest_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((130, 930), (60, 20)),
+                                           text=f"{oldest_particle}", manager=manager)
+
+
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 950), (60, 20)),
-                                            text="FPS: ", manager=manager)
+                                text="FPS: ", manager=manager)
     fps_rate = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30, 950), (60, 20)),
-                                            text=f"{actual_rate:.2f}", manager=manager)
+                                           text=f"{actual_rate:.2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((110, 950), (130, 20)),
+                                text="Number of Loops: ", manager=manager)
 
+    loops_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((240, 950), (40, 20)),
+                                             text=f"{total_num_loops}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 970), (300, 20)),
+                                text="Particle Life, by David Vance, 2024",
+                                manager=manager)
 
+    # Start the game loop
     running = True
     paused = False
     while running:
@@ -668,7 +691,7 @@ def main():
                     pt.yellow_count = 0
                     pt.cyan_count = 0
                     num_particles = default_num_particles
-                    particles = [pt(simulation_size_x, screen_size_y) for _ in range(num_particles)]
+                    particles = [pt() for _ in range(num_particles)]
                 
                 elif event.ui_element == pause_button:
                     paused = not paused
@@ -678,7 +701,9 @@ def main():
 
             manager.process_events(event)
 
+        # Where the magic happens
         if not paused:
+
             # Update particle color numbers
             red_count_entry.set_text(f"{pt.red_count}")
             green_count_entry.set_text(f"{pt.green_count}")
@@ -693,6 +718,7 @@ def main():
             panel.fill(BLACK)
             simulation_screen.fill(BLACK)
 
+            # Draws a white rectangle under the control panel so that it appears to have a white border
             pygame.draw.rect(panel, WHITE, pygame.Rect(0, 0, panel_size_x, screen_size_y), width=3)
 
             # Draw all particles onto the simulation_screen surface
@@ -707,11 +733,14 @@ def main():
             pygame.display.flip()
 
             # Update particle velocities
+            oldest_particle = 0
             many_neighbors = []
             old_particles = []
             for particle1 in particles:
                 if particle1.age > life_expect_loops:
                     old_particles.append(particle1)
+                if particle1.age > oldest_particle:
+                    oldest_particle = particle1.age
                 accel_x = 0
                 accel_y = 0
                 particle1.neighbors = 0
@@ -739,24 +768,24 @@ def main():
                 distance_to_bottom_wall = screen_size_y - particle1.y
 
                 if distance_to_right_wall < wall_repel_distance and distance_to_right_wall > 0:
-                    accel_x -= (1.5 - distance_to_right_wall/wall_repel_distance)
+                    accel_x -= (wall_repel_strength - distance_to_right_wall/wall_repel_distance)
                 elif distance_to_right_wall < 0:
-                    accel_x -= 1.5 * (1 - distance_to_right_wall/wall_repel_distance)
+                    accel_x -= wall_repel_strength * (1 - distance_to_right_wall/wall_repel_distance)
 
                 if distance_to_bottom_wall < wall_repel_distance and distance_to_bottom_wall > 0:
-                    accel_y -= (1.5 - distance_to_bottom_wall/wall_repel_distance)
+                    accel_y -= (wall_repel_strength - distance_to_bottom_wall/wall_repel_distance)
                 elif distance_to_bottom_wall < 0:
-                    accel_y -= 1.5 * (1-distance_to_bottom_wall/wall_repel_distance)
+                    accel_y -= wall_repel_strength * (1-distance_to_bottom_wall/wall_repel_distance)
 
                 if particle1.x < wall_repel_distance and particle1.x > 0:
-                    accel_x += 1.5 - particle1.x/wall_repel_distance
+                    accel_x += wall_repel_strength - particle1.x/wall_repel_distance
                 elif particle1.x < 0:
-                    accel_x += 1.5 * (1 - particle1.x/wall_repel_distance)
+                    accel_x += wall_repel_strength * (1 - particle1.x/wall_repel_distance)
 
                 if particle1.y < wall_repel_distance and particle1.y > 0:
-                    accel_y += 1.5 - particle1.y/wall_repel_distance
+                    accel_y += wall_repel_strength - particle1.y/wall_repel_distance
                 elif particle1.y < 0:
-                    accel_y += 1.5 * (1 - particle1.y/wall_repel_distance)
+                    accel_y += wall_repel_strength * (1 - particle1.y/wall_repel_distance)
                 
                 # Scaling factor for the strength of the attraction or repulsion force
                 accel_x *= rmax * force_factor
@@ -775,7 +804,7 @@ def main():
                 particle.x += (particle.x_vel * dt)
                 particle.y += (particle.y_vel * dt)
 
-            # Kill off 1 particles per second
+            # Kill off 1 particles per second if attrition is set to true
             if attrition:
                 attrition_timer -= dt
                 if attrition_timer <= 0:
@@ -799,12 +828,14 @@ def main():
                     num_particles -= 1
                     attrition_timer = 1
             
-            # Evolves particles. They die with age, and reproduce if they maintain many neighbors
+            # Controls evolution if evolution is set to true
             if evolution:
                 evolution_timer -= dt
                 if evolution_timer <= 0:
+
+                    # 15% of particles past the "max" age (number of game loops) will die
                     for particle in old_particles:
-                        if random() < 0.05:
+                        if random() < 0.15:
                             match particle.color:
                                 case 0:
                                     pt.red_count -=1
@@ -820,21 +851,32 @@ def main():
                                     pt.cyan_count -=1
                             particles.remove(particle)
                             num_particles -= 1
-                    many_neighbors_len = len(many_neighbors)
-                    if many_neighbors_len > 0:
-                        shuffle(many_neighbors)
-                        for i in range(0, many_neighbors_len, 5):
-                            new_particle = pt(many_neighbors[i].x, many_neighbors[i].y, many_neighbors[i].color)
+
+                    # 15% of particles with many neighbors will reproduce
+                    for particle in many_neighbors:
+                        if random() < 0.15:
+                            new_particle = pt(particle.x, particle.y, particle.color)
                             particles.append(new_particle)
                             num_particles += 1
+
+                    # Check to make sure the sim should keep running
                     if num_particles == 0:
                         running = False
+
+                    # Reset timer for next evolution step
                     evolution_timer = 5
 
-        # Controls frame rate
+        # Controls maximum frame rate
         clock.tick(rate)
 
-        #Determine length of time it took this iteration of the game loop to run and calculate actual FPS
+        # Counts and prints the total number of loops in the lifetime of the current sim
+        total_num_loops +=1
+        loops_text.set_text(f"{total_num_loops}")
+
+        # Keeps track of the oldest particle in the sim
+        oldest_text.set_text(f"{oldest_particle}")
+
+        #Determine length of time it took the current iteration of the game loop to run, and calculate actual FPS
         t1 = time()
         loop_length = t1-t0
         actual_rate = 1/loop_length
