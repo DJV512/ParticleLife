@@ -1,16 +1,14 @@
-from datetime import datetime
 import json
 from os import execl
 from particle import Particle as pt
 import pygame
 import pygame_gui
-from random import randint, shuffle, random
+from random import randint, random
 from sys import executable, argv
 from time import time
 
 
 def wait_for_click():
-    pygame.event.clear()
     while True:
         event = pygame.event.wait()
         if event.type == pygame.QUIT:
@@ -30,7 +28,7 @@ def main():
     simulation_size_x = screen_size_x - panel_size_x
     screen_size_y = 1000
     wall_repel_distance = 5
-    wall_repel_strength = 3
+    wall_repel_strength = 25
     particle_repel_force = 3
 
     # GUI Element Top Left positions
@@ -57,7 +55,7 @@ def main():
     neighbor_num = 6
 
     # Number of loops bewteen evolution steps
-    life_expect_loops = 500
+    life_expect_loops = 750
 
     # Counters for the total number of loops and total time
     total_num_loops = 0
@@ -66,7 +64,7 @@ def main():
     # Set default values for changeable parameters
     default_rmax = screen_size_y / 10
     default_friction_half_life = 0.04
-    default_beta = 0.1
+    default_beta = 0.2
     default_force_factor = 5
 
     # Starting number of particle defaults
@@ -88,6 +86,10 @@ def main():
 
     # Timer for particle attrition, if true
     attrition_timer = 1
+
+    # Save and load flags
+    SAVE = False
+    LOAD = False
 
     # Make num_particles number of randomly positioned and colored parrticles
     particles = [pt() for _ in range(num_particles)]
@@ -372,7 +374,7 @@ def main():
     fps_rate = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((35, footer_y+20), (60, 20)),
                                            text=f"{actual_rate:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, footer_y+20), (100, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, footer_y+20), (105, 20)),
                                 text="Total Loops: ", manager=manager)
 
     loops_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, footer_y+20), (60, 20)),
@@ -726,6 +728,7 @@ def main():
                     execl(executable, executable, *argv)
 
                 elif event.ui_element == save_button:
+                    paused=True
                     game_settings = {
                         "parameters": {
                             "wall_repel_distance": wall_repel_distance,
@@ -742,7 +745,6 @@ def main():
                             "beta": beta,
                             "force_factor": force_factor,
                             "attrition_timer": attrition_timer,
-                            "evolution_timer": default_evolution_timer,
                             "red_count": pt.red_count,
                             "green_count": pt.green_count,
                             "blue_count": pt.blue_count,
@@ -793,10 +795,24 @@ def main():
                             "cyan_cyan": attract_matrix[5][5],
                         },
                     }
-                    right_now = datetime.now()
-                    with open(f"{right_now}_save.json", "w") as f:
+                    dialog = pygame_gui.windows.UIFileDialog(pygame.Rect((0,500),(350,300)),
+                                                             window_title="Save Sim", manager=manager)
+                    dialog.show()
+                    SAVE = True
+
+                elif event.ui_element == load_button:
+                    paused=True
+                    dialog = pygame_gui.windows.UIFileDialog(pygame.Rect((0,350),(350,300)),
+                                                             window_title="Load Sim", manager=manager)
+                    dialog.show()
+                    LOAD = True
+
+                       
+            elif event.type == pygame_gui.UI_FILE_DIALOG_PATH_PICKED:
+                if SAVE:
+                    file = event.text
+                    with open(f"{file}_save.json", "w") as f:
                         json.dump(game_settings, f)
-                    
                     font = pygame.font.Font(None, 36)
                     text = font.render("Game saved! Press any key to continue.", True, (0,0,0))
                     text_rect = text.get_rect(center=(850,500))
@@ -804,8 +820,13 @@ def main():
                     screen.blit(text, text_rect)
                     pygame.display.flip()
                     wait_for_click()
-                    
-
+                    SAVE=False
+                    paused=False
+                elif LOAD:
+                    file = event.text
+                    with open(f"{file}", "r") as f:
+                        data = json.load(f)
+                        print(data)
 
 
             manager.process_events(event)
@@ -833,13 +854,6 @@ def main():
             # Draw all particles onto the simulation_screen surface
             for particle in particles:
                 particle.draw(simulation_screen)
-            
-            # Update the control panel, draw the control panel, and paste the control panel and simulation surfaces onto the main screen
-            manager.update(loop_length)        
-            manager.draw_ui(panel)
-            screen.blit(panel, (0,0))
-            screen.blit(simulation_screen, (panel_size_x,0))
-            pygame.display.flip()
 
             # Update particle velocities
             oldest_particle = 0
@@ -996,7 +1010,7 @@ def main():
                         else:
                             chance = 0
                         if random() < chance:
-                            new_particle = pt(particle.x, particle.y, particle.color, particle.size)
+                            new_particle = pt(x=particle.x, y=particle.y, color=particle.color, size=particle.size)
                             particles.append(new_particle)
                             num_particles += 1
 
@@ -1022,6 +1036,13 @@ def main():
         ttotal_min = int((t1-tstart)/60)
         ttotal_sec = int((t1-tstart)%60)
         total_time_text.set_text(f"{ttotal_min}:{ttotal_sec:02d}")
+
+         # Update the control panel, draw the control panel, and paste the control panel and simulation surfaces onto the main screen
+        manager.update(loop_length)        
+        manager.draw_ui(panel)
+        screen.blit(panel, (0,0))
+        screen.blit(simulation_screen, (panel_size_x,0))
+        pygame.display.flip()
 
 
     pygame.quit()

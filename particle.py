@@ -11,7 +11,11 @@ class Particle:
     cyan_count = 0
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, color=None, size=None):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, mutate=None):
+        '''
+        Initializes a new object of the particle class.
+        '''
+        # Random initial position for brand new particles, matching position to parent if offspring
         if x == None:
             self.x = random.random() * 1000
         else:
@@ -20,19 +24,40 @@ class Particle:
             self.y = random.random() * 1000
         else:
             self.y = y
-        self.x_vel = 0
-        self.y_vel = 0
+
+        # Initial velocity = 0 for brand new particles, matching velocity if loaded from save
+        if x_vel == None:
+            self.x_vel = 0
+        else:
+            self.x_vel = x_vel
+        if y_vel == None:
+            self.y_vel = 0
+        else:
+            self.y_vel = y_vel
+
+        # Parameter to keep track of how many "neighboring" particles a particle has
         self.neighbors = 0
-        self.age = 0
-        # self.size = 4
+
+        # Initialize the particle's age as 0 loops, unless specififed from loaded file
+        if age == None:
+            self.age = 0
+        else:
+            self.age = age
+
+
+        # Initialize the size. Random at the start of the sim, or equal to its parent if it's a new particle, or from a loaded file
         if size == None:
-            self.size = random.choice([1,2,3,4,5,6])
+            self.size = random.choice([1,2,3,4,5,6,7,8,9,10])
         else:
             self.size = size
+
+        # Initialize the color. Random at the start of the sim, or equal to its parent if it's a new particle, or from a loaded file
         if color == None:
             self.color = random.choice([0,1,2,3,4,5])
         else:
             self.color = color
+
+        #Keep track of the number of each color particle
         if self.color == 0:
             Particle.red_count += 1
         elif self.color == 1:
@@ -59,7 +84,7 @@ class Particle:
 
     def intra_particle_dist(self, other_particle, rmax):
         '''
-        Determines the distance between two particles.
+        Determines the euclidian distance between two particles.
         '''
         r = ry = 1000
         rx = self.x - other_particle.x
@@ -81,4 +106,7 @@ class Particle:
             return attraction * (1 - abs(2 * scaled_dist - 1 - beta)/ (1 - beta))
 
     def draw(self, simulation_screen):
+        '''
+        Given a particle object, draws it on the simulation_screen surface.
+        '''
         pygame.draw.circle(simulation_screen, Particle.COLORS[self.color], (self.x, self.y), self.size)
