@@ -56,9 +56,12 @@ def main():
     # Number of neighbors within neighbor_dist that triggers reproduction
     neighbor_num = 6
 
-    # Number of loops before a particle dies
-    life_expect_loops = 750
+    # Number of loops bewteen evolution steps
+    life_expect_loops = 500
+
+    # Counters for the total number of loops and total time
     total_num_loops = 0
+    total_time = 0
 
     # Set default values for changeable parameters
     default_rmax = screen_size_y / 10
@@ -85,10 +88,6 @@ def main():
 
     # Timer for particle attrition, if true
     attrition_timer = 1
-
-    # Timer to control evolution, if true
-    default_evolution_timer = 10
-    evolution_timer = default_evolution_timer
 
     # Make num_particles number of randomly positioned and colored parrticles
     particles = [pt() for _ in range(num_particles)]
@@ -356,23 +355,27 @@ def main():
                                             text='Save Sim', manager=manager)
     load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, save_load_y), (140, 30)),
                                             text='Load Sim', manager=manager)
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, footer_y), (120, 20)),
+                                text="Total Time: ", manager=manager)
 
+    total_time_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((90, footer_y), (60, 20)),
+                                           text=f"{total_time}", manager=manager)
 
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, footer_y), (158, 20)),
-                                text="Oldest Particle: ", manager=manager)
-    oldest_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((130, footer_y), (60, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((163, footer_y), (158, 20)),
+                                text="Oldest: ", manager=manager)
+    oldest_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, footer_y), (60, 20)),
                                            text=f"{oldest_particle}", manager=manager)
 
 
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, footer_y+20), (60, 20)),
                                 text="FPS: ", manager=manager)
-    fps_rate = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30, footer_y+20), (60, 20)),
+    fps_rate = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((35, footer_y+20), (60, 20)),
                                            text=f"{actual_rate:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((110, footer_y+20), (130, 20)),
-                                text="Number of Loops: ", manager=manager)
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, footer_y+20), (100, 20)),
+                                text="Total Loops: ", manager=manager)
 
-    loops_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((240, footer_y+20), (40, 20)),
+    loops_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, footer_y+20), (60, 20)),
                                              text=f"{total_num_loops}", manager=manager)
     
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, footer_y+40), (300, 20)),
@@ -382,6 +385,7 @@ def main():
     # Start the game loop
     running = True
     paused = False
+    tstart = time()
     while running:
         t0 = time()
         for event in pygame.event.get():
@@ -944,12 +948,25 @@ def main():
             
             # Controls evolution if evolution is set to true
             if evolution:
-                evolution_timer -= dt
-                if evolution_timer <= 0:
+                if total_num_loops % life_expect_loops == 0:
 
-                    # 15% of particles past the "max" age (number of game loops) will die
+                    # Particles past the "max" age will die with a probability proportional to how old they are
                     for particle in old_particles:
-                        if random() < 0.15:
+                        if particle.age < 2 * life_expect_loops:
+                            chance = 0.15
+                        elif particle.age < 4 * life_expect_loops:
+                            chance = 0.3
+                        elif particle.age < 6 * life_expect_loops:
+                            chance = 0.45
+                        elif particle.age < 8 * life_expect_loops:
+                            chance = 0.6
+                        elif particle.age < 10 * life_expect_loops:
+                            chance = 0.75
+                        elif particle.age < 12 * life_expect_loops:
+                            chance = 0.90
+                        else:
+                            chance = 1
+                        if random() < chance:
                             match particle.color:
                                 case 0:
                                     pt.red_count -=1
@@ -966,9 +983,19 @@ def main():
                             particles.remove(particle)
                             num_particles -= 1
 
-                    # 15% of particles with many neighbors will reproduce
+                    # Particles with many neighbors will reproduce at a rate proportional to their age
                     for particle in many_neighbors:
-                        if random() < 0.15:
+                        if particle.age < 2 * life_expect_loops:
+                            chance = 0.4
+                        elif particle.age < 4 * life_expect_loops:
+                            chance = 0.3
+                        elif particle.age < 6 * life_expect_loops:
+                            chance = 0.2
+                        elif particle.age < 8 * life_expect_loops:
+                            chance = 0.1
+                        else:
+                            chance = 0
+                        if random() < chance:
                             new_particle = pt(particle.x, particle.y, particle.color, particle.size)
                             particles.append(new_particle)
                             num_particles += 1
@@ -976,9 +1003,6 @@ def main():
                     # Check to make sure the sim should keep running
                     if num_particles == 0:
                         running = False
-
-                    # Reset timer for next evolution step
-                    evolution_timer = default_evolution_timer
 
         # Controls maximum frame rate
         clock.tick(rate)
@@ -995,6 +1019,10 @@ def main():
         loop_length = t1-t0
         actual_rate = 1/loop_length
         fps_rate.set_text(f"{actual_rate:.2f}")  
+        ttotal_min = int((t1-tstart)/60)
+        ttotal_sec = int((t1-tstart)%60)
+        total_time_text.set_text(f"{ttotal_min}:{ttotal_sec:02d}")
+
 
     pygame.quit()
 
