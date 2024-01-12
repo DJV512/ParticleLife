@@ -11,7 +11,7 @@ class Particle:
     cyan_count = 0
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, mutate=None):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, mutate=None, load=False):
         '''
         Initializes a new object of the particle class.
         '''
@@ -57,19 +57,20 @@ class Particle:
         else:
             self.color = color
 
-        #Keep track of the number of each color particle
-        if self.color == 0:
-            Particle.red_count += 1
-        elif self.color == 1:
-            Particle.green_count += 1
-        elif self.color == 2:
-            Particle.blue_count += 1
-        elif self.color == 3:
-            Particle.purple_count += 1
-        elif self.color == 4:
-            Particle.yellow_count += 1
-        elif self.color == 5:
-            Particle.cyan_count += 1
+        #Keep track of the number of each color particle if these are new particles, not from a load
+        if not load:
+            if self.color == 0:
+                Particle.red_count += 1
+            elif self.color == 1:
+                Particle.green_count += 1
+            elif self.color == 2:
+                Particle.blue_count += 1
+            elif self.color == 3:
+                Particle.purple_count += 1
+            elif self.color == 4:
+                Particle.yellow_count += 1
+            elif self.color == 5:
+                Particle.cyan_count += 1
 
     @staticmethod
     def new_matrix():

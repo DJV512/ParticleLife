@@ -5,7 +5,7 @@
 
 This project was initially implemented in one file (main.py, now located within Original). I then challenged myself to 
 refactor the code to make particles into a class, which has successfully been completed. I've since implemented many 
-other goals, including saving (and soon loading) simulations, particles of different sizes, and a very primitive "evolution"
+other goals, including saving and loading simulations, particles of different sizes, and a very primitive "evolution"
 system. The evolution system at this point kills off particles after a certain age, and allows a percentage of particles
 with "many neighbors" to reproduce an identical particle. The plan eventually is for every particle to have it's own
 attraction matrix, rather than just one that governs all particles, and that thosee values, along with size and color, will be mutatable when particles reproduce. I still need to figure out what makes a particle "fit" enough to reproduce. I don't

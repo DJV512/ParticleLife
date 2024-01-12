@@ -59,6 +59,9 @@ def main():
 
     # Counters for the total number of loops and total time
     total_num_loops = 0
+    ttotal_min = 0
+    ttotal_sec = 0
+    loaded_clock = False
     total_time = 0
 
     # Set default values for changeable parameters
@@ -354,7 +357,7 @@ def main():
                                 text="Total Time: ", manager=manager)
 
     total_time_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((90, footer_y), (60, 20)),
-                                           text=f"{total_time}", manager=manager)
+                                           text=f"{f"{ttotal_min}:{ttotal_sec:02d}"}", manager=manager)
 
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((163, footer_y), (158, 20)),
                                 text="Oldest: ", manager=manager)
@@ -745,6 +748,10 @@ def main():
                             "yellow_count": pt.yellow_count,
                             "cyan_count": pt.cyan_count,
                             "num_particles": num_particles,
+                            "ttotal_min": ttotal_min,
+                            "ttotal_sec": ttotal_sec,
+                            "total_num_loops": total_num_loops,
+                            "oldest_particle": oldest_particle
                         },
 
                         "particle_data": [(part.x, part.y, part.x_vel, part.y_vel, part.age, part.size, part.color) for part in particles],
@@ -788,6 +795,11 @@ def main():
                             "cyan_cyan": attract_matrix[5][5],
                         },
                     }
+                    if not loaded_clock:
+                        game_settings["parameters"]["total_time"] =  time()-tstart
+                    else:
+                        game_settings["parameters"]["total_time"] =  total_time + (time()-load_time)
+
                     dialog = pygame_gui.windows.UIFileDialog(pygame.Rect((0,500),(350,300)),
                                                              window_title="Save Sim", manager=manager)
                     dialog.show()
@@ -841,6 +853,24 @@ def main():
                     pt.yellow_count = data["parameters"]["yellow_count"]
                     pt.cyan_count = data["parameters"]["cyan_count"]
                     num_particles = data["parameters"]["num_particles"]
+                    ttotal_min = data["parameters"]["ttotal_min"]
+                    ttotal_sec = data["parameters"]["ttotal_sec"]
+                    total_time = data["parameters"]["total_time"]
+                    total_num_loops = data["parameters"]["total_num_loops"]
+                    oldest_particle = data["parameters"]["oldest_particle"]
+
+                    slider_beta.set_current_value(beta)
+                    text_beta.set_text(f"Beta (how close they can get): {beta:.2f}") 
+                    slider_friction.set_current_value(friction_half_life)
+                    text_friction.set_text(f"Friction (slow down over time): {friction_half_life:.2f}")
+                    slider_force.set_current_value(force_factor)
+                    text_force.set_text(f"Force (scalar multiple): {force_factor:.2f}")
+                    slider_rmax.set_current_value(rmax)
+                    text_rmax.set_text(f"rMax (distance of interaction): {rmax:.2f}")
+
+                    total_time_text.set_text(f"{ttotal_min}:{ttotal_sec:02d}")
+                    oldest_text.set_text(f"{oldest_particle}")
+                    loops_text.set_text(f"{total_num_loops}")
 
                     particles = []
                     particles = [pt(x=data["particle_data"][i][0], 
@@ -849,7 +879,8 @@ def main():
                                     y_vel=data["particle_data"][i][3],
                                     age=data["particle_data"][i][4],
                                     size=data["particle_data"][i][5],
-                                    color=data["particle_data"][i][6]) 
+                                    color=data["particle_data"][i][6],
+                                    load=True) 
                                  for i in range(num_particles)]
                 
                     attract_matrix[0][0] = data["attract_matrix"]["red_red"]
@@ -931,6 +962,8 @@ def main():
                     cyan_yellow_entry.set_text(f"{attract_matrix[5][4]:.2f}")
                     cyan_cyan_entry.set_text(f"{attract_matrix[5][5]:.2f}")
 
+                    loaded_clock = True
+                    load_time = time()
                     LOAD = False
                     paused = False
 
@@ -1138,9 +1171,13 @@ def main():
         t1 = time()
         loop_length = t1-t0
         actual_rate = 1/loop_length
-        fps_rate.set_text(f"{actual_rate:.2f}")  
-        ttotal_min = int((t1-tstart)/60)
-        ttotal_sec = int((t1-tstart)%60)
+        fps_rate.set_text(f"{actual_rate:.2f}")
+        if loaded_clock:
+            ttotal_min = int((total_time + (t1-load_time))/60)
+            ttotal_sec = int((total_time + (t1-load_time))%60)
+        else:
+            ttotal_min = int((t1-tstart)/60)
+            ttotal_sec = int((t1-tstart)%60)
         total_time_text.set_text(f"{ttotal_min}:{ttotal_sec:02d}")
 
          # Update the control panel, draw the control panel, and paste the control panel and simulation surfaces onto the main screen
