@@ -156,24 +156,19 @@ def main():
                                             text='Restart Sim', manager=manager)
     
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, dropdown_y), (224,25)),
-                                                 text="Particles will randomly die:",
-                                                 manager=manager)
+                                                 text="Particles will randomly die:", manager=manager)
     attrition_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((250, dropdown_y), (80,25)),
-                                                         options_list=["False", "True"],
-                                                         starting_option="False",
+                                                         options_list=["False", "True"], starting_option="False",
                                                          manager=manager)
     
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, dropdown_y + 30), (224,25)),
-                                                 text="Particles will evolve:",
-                                                 manager=manager)
+                                                 text="Particles will evolve:", manager=manager)
     evolution_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((250, dropdown_y + 30), (80,25)),
-                                                         options_list=["False", "True"],
-                                                         starting_option="True",
+                                                         options_list=["False", "True"], starting_option="True",
                                                          manager=manager)
     
     slider_beta = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, slider_y + 20), (300, 20)),
-                                                         start_value=beta, value_range=(0, 1),
-                                                         manager=manager)
+                                                         start_value=beta, value_range=(0, 1), manager=manager)
     text_beta = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((15, slider_y), (300, 20)),
                                             text=f"Beta (how close they can get): {slider_beta.get_current_value():.2f}",
                                             manager=manager)
@@ -197,11 +192,9 @@ def main():
                                             manager=manager)
 
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, attraction_matrix_y-50), (330,20)),
-                                                   text="Forces between colors (changeable)",
-                                                   manager=manager)
+                                                   text="Forces between colors (changeable)", manager=manager)
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, attraction_matrix_y-30), (330,20)),
-                                                   text="Negative attracts, Positive repels",
-                                                   manager=manager)
+                                                   text="Negative attracts, Positive repels", manager=manager)
 
     red_red_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,attraction_matrix_y+20),(50,30)),
                                                         manager=manager, initial_text=f"{attract_matrix[0][0]:.2f}")
@@ -652,20 +645,20 @@ def main():
                 if event.ui_element == reset_sliders_button:
                     beta = default_beta
                     slider_beta.set_current_value(beta)
-                    text_beta.set_text(f"Beta: {beta:.2f}")
+                    text_beta.set_text(f"Beta (how close they can get): {beta:.2f}")
 
                     friction_half_life = default_friction_half_life
                     friction_factor = 0.5 ** (dt/friction_half_life)
                     slider_friction.set_current_value(friction_half_life)
-                    text_friction.set_text(f"Friction: {friction_half_life:.2f}")
+                    text_friction.set_text(f"Friction (slow down over time): {friction_half_life:.2f}")
 
                     force_factor = default_force_factor
                     slider_force.set_current_value(force_factor)
-                    text_force.set_text(f"Force: {force_factor:.2f}")
+                    text_force.set_text(f"Force (scalar multiple): {force_factor:.2f}")
 
                     rmax = default_rmax
                     slider_rmax.set_current_value(rmax)
-                    text_rmax.set_text(f"rMax: {rmax:.2f}")
+                    text_rmax.set_text(f"rMax (distance of interaction): {rmax:.2f}")
 
                 elif event.ui_element == new_matrix_button:
                     attract_matrix = pt.new_matrix()
@@ -820,13 +813,126 @@ def main():
                     screen.blit(text, text_rect)
                     pygame.display.flip()
                     wait_for_click()
-                    SAVE=False
-                    paused=False
+                    SAVE = False
+                    paused = False
                 elif LOAD:
                     file = event.text
                     with open(f"{file}", "r") as f:
                         data = json.load(f)
-                        print(data)
+
+                    wall_repel_distance = data["parameters"]["wall_repel_distance"]
+                    wall_repel_strength = data["parameters"]["wall_repel_strength"]
+                    particle_repel_force = data["parameters"]["particle_repel_force"]
+                    rate = data["parameters"]["rate"]
+                    attrition = data["parameters"]["attrition"]
+                    evolution = data["parameters"]["evolution"]
+                    neighbor_dist = data["parameters"]["neighbor_dist"]
+                    neighbor_num = data["parameters"]["neighbor_num"]
+                    life_expect_loops = data["parameters"]["life_expect_loops"]
+                    rmax = data["parameters"]["rmax"]
+                    friction_half_life = data["parameters"]["friction_half_life"]
+                    beta = data["parameters"]["beta"]
+                    force_factor = data["parameters"]["force_factor"]
+                    attrition_timer = data["parameters"]["attrition_timer"]
+                    pt.red_count = data["parameters"]["red_count"]
+                    pt.green_count = data["parameters"]["green_count"]
+                    pt.blue_count = data["parameters"]["blue_count"]
+                    pt.purple_count = data["parameters"]["purple_count"]
+                    pt.yellow_count = data["parameters"]["yellow_count"]
+                    pt.cyan_count = data["parameters"]["cyan_count"]
+                    num_particles = data["parameters"]["num_particles"]
+
+                    particles = []
+                    particles = [pt(x=data["particle_data"][i][0], 
+                                    y=data["particle_data"][i][1], 
+                                    x_vel=data["particle_data"][i][2],
+                                    y_vel=data["particle_data"][i][3],
+                                    age=data["particle_data"][i][4],
+                                    size=data["particle_data"][i][5],
+                                    color=data["particle_data"][i][6]) 
+                                 for i in range(num_particles)]
+                
+                    attract_matrix[0][0] = data["attract_matrix"]["red_red"]
+                    attract_matrix[0][1] = data["attract_matrix"]["red_green"]
+                    attract_matrix[0][2] = data["attract_matrix"]["red_blue"]
+                    attract_matrix[0][3] = data["attract_matrix"]["red_purple"]
+                    attract_matrix[0][4] = data["attract_matrix"]["red_yellow"]
+                    attract_matrix[0][5] = data["attract_matrix"]["red_cyan"]
+                    attract_matrix[1][0] = data["attract_matrix"]["green_red"]
+                    attract_matrix[1][1] = data["attract_matrix"]["green_green"]
+                    attract_matrix[1][2] = data["attract_matrix"]["green_blue"]
+                    attract_matrix[1][3] = data["attract_matrix"]["green_purple"]
+                    attract_matrix[1][4] = data["attract_matrix"]["green_yellow"]
+                    attract_matrix[1][5] = data["attract_matrix"]["green_cyan"]
+                    attract_matrix[2][0] = data["attract_matrix"]["blue_red"]
+                    attract_matrix[2][1] = data["attract_matrix"]["blue_green"]
+                    attract_matrix[2][2] = data["attract_matrix"]["blue_blue"]
+                    attract_matrix[2][3] = data["attract_matrix"]["blue_purple"] 
+                    attract_matrix[2][4] = data["attract_matrix"]["blue_yellow"]
+                    attract_matrix[2][5] = data["attract_matrix"]["blue_cyan"]
+                    attract_matrix[3][0] = data["attract_matrix"]["purple_red"]
+                    attract_matrix[3][1] = data["attract_matrix"]["purple_green"]
+                    attract_matrix[3][2] = data["attract_matrix"]["purple_blue"]
+                    attract_matrix[3][3] = data["attract_matrix"]["purple_purple"]
+                    attract_matrix[3][4] = data["attract_matrix"]["purple_yellow"]
+                    attract_matrix[3][5] = data["attract_matrix"]["purple_cyan"]
+                    attract_matrix[4][0] = data["attract_matrix"]["yellow_red"]
+                    attract_matrix[4][1] = data["attract_matrix"]["yellow_green"]
+                    attract_matrix[4][2] = data["attract_matrix"]["yellow_blue"]
+                    attract_matrix[4][3] = data["attract_matrix"]["yellow_purple"]
+                    attract_matrix[4][4] = data["attract_matrix"]["yellow_yellow"]
+                    attract_matrix[4][5] = data["attract_matrix"]["yellow_cyan"]
+                    attract_matrix[5][0] = data["attract_matrix"]["cyan_red"]
+                    attract_matrix[5][1] = data["attract_matrix"]["cyan_green"]
+                    attract_matrix[5][2] = data["attract_matrix"]["cyan_blue"]
+                    attract_matrix[5][3] = data["attract_matrix"]["cyan_purple"]
+                    attract_matrix[5][4] = data["attract_matrix"]["cyan_yellow"]
+                    attract_matrix[5][5] = data["attract_matrix"]["cyan_cyan"]
+                    
+                    red_red_entry.set_text(f"{attract_matrix[0][0]:.2f}")
+                    red_green_entry.set_text(f"{attract_matrix[0][1]:.2f}")
+                    red_blue_entry.set_text(f"{attract_matrix[0][2]:.2f}")
+                    red_purple_entry.set_text(f"{attract_matrix[0][3]:.2f}")
+                    red_yellow_entry.set_text(f"{attract_matrix[0][4]:.2f}")
+                    red_cyan_entry.set_text(f"{attract_matrix[0][5]:.2f}")
+
+                    green_red_entry.set_text(f"{attract_matrix[1][0]:.2f}")
+                    green_green_entry.set_text(f"{attract_matrix[1][1]:.2f}")
+                    green_blue_entry.set_text(f"{attract_matrix[1][2]:.2f}")
+                    green_purple_entry.set_text(f"{attract_matrix[1][3]:.2f}")
+                    green_yellow_entry.set_text(f"{attract_matrix[1][4]:.2f}")
+                    green_cyan_entry.set_text(f"{attract_matrix[1][5]:.2f}")
+
+                    blue_red_entry.set_text(f"{attract_matrix[2][0]:.2f}")
+                    blue_green_entry.set_text(f"{attract_matrix[2][1]:.2f}")
+                    blue_blue_entry.set_text(f"{attract_matrix[2][2]:.2f}")
+                    blue_purple_entry.set_text(f"{attract_matrix[2][3]:.2f}")
+                    blue_yellow_entry.set_text(f"{attract_matrix[2][4]:.2f}")
+                    blue_cyan_entry.set_text(f"{attract_matrix[2][5]:.2f}")
+
+                    purple_red_entry.set_text(f"{attract_matrix[3][0]:.2f}")
+                    purple_green_entry.set_text(f"{attract_matrix[3][1]:.2f}")
+                    purple_blue_entry.set_text(f"{attract_matrix[3][2]:.2f}")
+                    purple_purple_entry.set_text(f"{attract_matrix[3][3]:.2f}")
+                    purple_yellow_entry.set_text(f"{attract_matrix[3][4]:.2f}")
+                    purple_cyan_entry.set_text(f"{attract_matrix[3][5]:.2f}")
+
+                    yellow_red_entry.set_text(f"{attract_matrix[4][0]:.2f}")
+                    yellow_green_entry.set_text(f"{attract_matrix[4][1]:.2f}")
+                    yellow_blue_entry.set_text(f"{attract_matrix[4][2]:.2f}")
+                    yellow_purple_entry.set_text(f"{attract_matrix[4][3]:.2f}")
+                    yellow_yellow_entry.set_text(f"{attract_matrix[4][4]:.2f}")
+                    yellow_cyan_entry.set_text(f"{attract_matrix[4][5]:.2f}")
+
+                    cyan_red_entry.set_text(f"{attract_matrix[5][0]:.2f}")
+                    cyan_green_entry.set_text(f"{attract_matrix[5][1]:.2f}")
+                    cyan_blue_entry.set_text(f"{attract_matrix[5][2]:.2f}")
+                    cyan_purple_entry.set_text(f"{attract_matrix[5][3]:.2f}")
+                    cyan_yellow_entry.set_text(f"{attract_matrix[5][4]:.2f}")
+                    cyan_cyan_entry.set_text(f"{attract_matrix[5][5]:.2f}")
+
+                    LOAD = False
+                    paused = False
 
 
             manager.process_events(event)
