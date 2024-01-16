@@ -1,9 +1,8 @@
 # from python import Python
-from random import randint
-from random import choice
+import random
 import pygame
    
-fn main():
+def main():
 
     let BLACK: Tuple[Int, Int, Int] = (0,0,0)
     let WHITE: Tuple[Int, Int, Int] = (255,255,255)
@@ -13,22 +12,23 @@ fn main():
     let dt: Float32 = 1/rate
 
     # Set default values for changeable parameters
+    let one_half: Float32 = 1.0/2.0
     let rmax: Int = 100
     let friction_half_life: Float32 = 0.04
     let friction_factor: Float32 = one_half ** (dt/friction_half_life)
     let beta: Float32 = 0.3
     let force_factor: Int = 5
 
-    let num_particles: Int = 50
+    let num_particles: Int = 2
     let wall_repel_distance: Int = 30
 
 
-    var x: Float32
-    var y: Float32
-    var x_vel: Float32
-    var y_vel: Float32
-    var size: Int
-    var color: Int
+    var x_pos: ListLiteral[Float32, Float32]
+    var y_pos: ListLiteral[Float32, Float32]
+    var x_vel: ListLiteral[Float32, Float32]
+    var y_vel: ListLiteral[Float32, Float32]
+    var sizes: ListLiteral[Int, Int]
+    var colors: ListLiteral[Int, Int]
     var r: Float32
     var rx: Float32
     var ry: Float32
@@ -41,27 +41,24 @@ fn main():
 
     COLORS = [(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
 
-    fn make_random_particles() -> ListLiteral:
-        x = random() * 1000
-        y = random() * 1000
-        x_vel = 0
-        y_vel = 0
-        size = 2
-        color = randint(0,5)
-        return attract_matrix
+    fn make_random_particles() -> ListLiteral, ListLiteral, ListLiteral, ListLiteral, ListLiteral, ListLiteral:
+        for _ in range(num_particles):
+            x_pos.append(random.random() * 1000)
+            y_pos.append(random.random() * 1000)
+            x_vel.append(0)
+            y_vel.append(0)
+            sizes.append(2)
+            colors.append(random.randint(0,5))
+        return x_pos, y_pos, x_vel, y_vel, sizes, colors
 
 
-    fn intra_particle_dist(rmax: Float32) -> Float32:
+    fn intra_particle_dist(rmax: Float32, i: Int, j: Int) -> Float32:
         '''
         Determines the distance between two particles.
         '''
-        r = 1000
-        ry = 1000
-        rx = x - other_particle.x
-        if rx < rmax:
-            ry = y - other_particle.y
-            if ry < rmax:
-                r = (rx**2 + ry**2)**(1/2)
+        rx = x_pos[i]-x_pos[j]
+        ry = y_pos[i]-y_pos[j]
+        r = (rx**2 + ry**2)**(1/2)
         return rx, ry, r
 
     fn force(attraction: Float32, scaled_dist: Float32, beta: Float32) -> Float32:
@@ -73,17 +70,14 @@ fn main():
         elif scaled_dist < 1:
             return attraction * (1 - abs(2 * scaled_dist - 1 - beta)/(1 - beta))
 
-    fn draw(screen: Surface):
-        pygame.draw.circle(screen, COLORS[color], (x, y), size)
-
     #Make num_particles particles
     var x_positions: ListLiteral[Float32]
     
     #Make random attraction matrix
     var attract_matrix: ListLiteral[ListLiteral[Float32]]
     for i in range(6):
-            for j in range(6):
-                attract_matrix[i][j] = random() * 2 - 1 
+        for j in range(6):
+            attract_matrix[i][j] = random.random() * 2 - 1 
 
     pygame.init()
     var clock: Clock = pygame.time.Clock()
@@ -103,23 +97,27 @@ fn main():
         screen.fill(BLACK)
 
         # Draw all particles onto the simulation_screen surface
-        for particle in particles:
-            particle.draw(screen)
+        for i in range(num_particles):
+            pygame.draw.circle(screen, COLORS[colors[i]], (x_pos[i], y_pos[i]), sizes[i])
         
         # Update the screen
         pygame.display.flip()
 
         # Update particle velocities
-        for particle1 in particles:
+        for i in range(num_particles):
             var accel_x: Float32 = 0
             var accel_y: Float32 = 0
-            for particle2 in particles:
-                if particle1 == particle2:
+            for j in range(num_particles):
+                if i == j:
                     continue
                 else:
-                    rx, ry, r = particle1.intra_particle_dist(particle2, default_rmax)
+                    var rx: Float32
+                    var ry: Float32
+                    var r: Float32
+                    rx, ry, r = intra_particle_dist(rmax, i, j)
                     if r < rmax:
-                        f = pt.force(attract_matrix[particle1.color][particle2.color], r/rmax, beta)
+                        var f: Float32
+                        f = force(attract_matrix[color[i]][color[j]], r/rmax, beta)
                         if r == 0:
                             r = 0.00001
                         accel_x += rx/r * f
@@ -130,17 +128,17 @@ fn main():
             accel_y *= rmax * force_factor
             
             # Slow the particles down to account for friction
-            particle1.x_vel *= friction_factor
-            particle1.y_vel *= friction_factor
+            x_vel[i] *= friction_factor
+            y_vel[i] *= friction_factor
 
             # Update velocity based on x and y acceleration and the time step
-            particle1.x_vel += (accel_x * dt)
-            particle1.y_vel += (accel_y * dt)
+            x_vel[i] += (accel_x * dt)
+            y_vel[i] += (accel_y * dt)
 
         # Update all particle positions based on x and y velocity and the time step
-        for particle in particles:
-            particle.x += (particle.x_vel * dt)
-            particle.y += (particle.y_vel * dt)
+        for i in range(num_particles):
+            x_pos[i] += (x_vel[i] * dt)
+            y_pos[i] += (y_vel[i] * dt)
 
 
         # Controls frame rate
