@@ -1,5 +1,5 @@
 import random
-import numpy as np
+from numpy import ndarray
 import pygame
 
 class Particle:
@@ -77,29 +77,26 @@ class Particle:
         '''
         Generates a matrix of random attraction and repulsion for each pair of colors between -1 and 1.
         '''
-        attract_matrix = np.ndarray(shape=(6, 6), dtype=float)
+        attract_matrix = ndarray(shape=(6, 6), dtype=float)
         for i in range(6):
             for j in range(6):
                 attract_matrix[i][j] = random.random() * 2 - 1 
         return attract_matrix 
 
-    def intra_particle_dist(self, other_particle, rmax):
+    def intra_particle_dist(self, other):
         '''
-        Determines the euclidian distance between two particles.
+        Determines the euclidian distance between the centers and surfaces of two particles.
         '''
-        r = ry = 1000
-        rx = self.x - other_particle.x
-        if rx < rmax:
-            ry = self.y - other_particle.y
-            if ry < rmax:
-                r = (rx**2 + ry**2)**(1/2)
-                r -= self.size - other_particle.size
-        return rx, ry, r
+        rx = self.x-other.x
+        ry = self.y-other.y
+        r_centers = (rx**2 + ry**2)**(1/2)
+        r_surfaces = r_centers - self.size - other.size
+        return rx, ry, r_centers, r_surfaces
 
     @staticmethod
     def force(attraction, scaled_dist, beta):
         '''
-        Determines the force applied by one particle on another based on their distance apart and attraction value.
+        Determines the force applied by one particle on another based on their distance apart, beta and their attraction value.
         '''
         if scaled_dist < beta:
             return 2 - (scaled_dist/beta)

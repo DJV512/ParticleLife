@@ -1,9 +1,10 @@
 import json
+from math import atan2, cos, sin
 from os import execl
 from particle import Particle as pt
 import pygame
 import pygame_gui
-from random import randint, random
+from random import random
 from sys import executable, argv
 from time import time
 
@@ -29,7 +30,7 @@ def main():
     screen_size_y = 1000
     wall_repel_distance = 5
     wall_repel_strength = 25
-    particle_repel_force = 3
+    particle_repel_force = 8
 
     # GUI Element Top Left positions
     particule_num_y = 30
@@ -66,7 +67,7 @@ def main():
     # Set default values for changeable parameters
     default_rmax = screen_size_y / 10
     default_friction_half_life = 0.04
-    default_beta = 0.2
+    default_beta = 0.1
     default_force_factor = 5
 
     # Starting number of particle defaults
@@ -377,7 +378,14 @@ def main():
     tstart = time()
     while running:
         t0 = time()
+
+        # Controls maximum frame rate
+        clock.tick(rate)
+
+        # Cycle through all user initiated events that happen during the simulation
         for event in pygame.event.get():
+
+            # Handle ending the simulation
             if event.type == pygame.QUIT:
                 running = False
             
@@ -953,7 +961,7 @@ def main():
                     LOAD = False
                     paused = False
 
-
+            # Removes already processed events from the list of events
             manager.process_events(event)
 
         # Where the magic happens
@@ -996,24 +1004,20 @@ def main():
                     if particle1 == particle2:
                         continue
                     else:
-                        rx, ry, r = particle1.intra_particle_dist(particle2, default_rmax)
-                        if r < neighbor_dist:
+                        rx, ry, r_centers, r_surfaces = particle1.intra_particle_dist(particle2)
+                        if r_centers < neighbor_dist:
                             particle1.neighbors += 1
-                        if r < rmax and r > 0:
-                            f = pt.force(attract_matrix[particle1.color][particle2.color], r/rmax, beta) * particle2.size
-                            if r == 0:
-                                r = 0.00001
-                            accel_x += rx/r * f
-                            accel_y += ry/r * f
-                        elif r < 0:
-                            if rx > 0:
-                                accel_x += particle_repel_force
-                            else:
-                                accel_x -= particle_repel_force
-                            if ry > 0:
-                                accel_y += particle_repel_force
-                            if ry < 0:
-                                accel_y -= particle_repel_force
+                        if r_centers > rmax:
+                            continue
+                        elif r_centers <= rmax and r_surfaces > 0:
+                            f = pt.force(attract_matrix[particle1.color][particle2.color], r_centers/rmax, beta) * particle2.size
+                            theta = atan2(ry, rx)
+                            accel_x += cos(theta) * f
+                            accel_y += sin(theta) * f
+                        elif r_surfaces < 0:
+                            theta = atan2(ry, rx)
+                            accel_x += cos(theta) * particle_repel_force
+                            accel_y += sin(theta) * particle_repel_force
 
                 if particle1.neighbors > neighbor_num:
                     many_neighbors.append(particle1)
@@ -1118,9 +1122,6 @@ def main():
                     # Check to make sure the sim should keep running
                     if num_particles == 0:
                         running = False
-
-        # Controls maximum frame rate
-        clock.tick(rate)
 
         # Counts and prints the total number of loops in the lifetime of the current sim
         total_num_loops +=1
