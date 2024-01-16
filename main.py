@@ -1,4 +1,4 @@
-import json
+from json import dump, load
 from math import atan2, cos, sin
 from os import execl
 from particle import Particle as pt
@@ -86,9 +86,6 @@ def main():
     # Variables to measure the actual frame_rate
     actual_rate = rate
     loop_length = 1/rate
-
-    # Timer for particle attrition, if true
-    attrition_timer = 1
 
     # Save and load flags
     SAVE = False
@@ -725,7 +722,6 @@ def main():
                             "wall_repel_strength": wall_repel_strength,
                             "particle_repel_force": particle_repel_force,
                             "rate": rate,
-                            "attrition": attrition,
                             "evolution": evolution,
                             "neighbor_dist": neighbor_dist,
                             "neighbor_num": neighbor_num,
@@ -734,7 +730,6 @@ def main():
                             "friction_half_life": friction_half_life,
                             "beta": beta,
                             "force_factor": force_factor,
-                            "attrition_timer": attrition_timer,
                             "red_count": pt.red_count,
                             "green_count": pt.green_count,
                             "blue_count": pt.blue_count,
@@ -795,14 +790,18 @@ def main():
                         game_settings["parameters"]["total_time"] =  total_time + (time()-load_time)
 
                     dialog = pygame_gui.windows.UIFileDialog(pygame.Rect((0,500),(350,300)),
-                                                             window_title="Save Sim", manager=manager)
+                                                             window_title="Save Sim", 
+                                                             initial_file_path="Interesting_Forces/",
+                                                             manager=manager)
                     dialog.show()
                     SAVE = True
 
                 elif event.ui_element == load_button:
                     paused=True
                     dialog = pygame_gui.windows.UIFileDialog(pygame.Rect((0,350),(350,300)),
-                                                             window_title="Load Sim", manager=manager)
+                                                             window_title="Load Sim", 
+                                                             initial_file_path="Interesting_Forces/",
+                                                             manager=manager)
                     dialog.show()
                     LOAD = True
 
@@ -811,7 +810,7 @@ def main():
                 if SAVE:
                     file = event.text
                     with open(f"{file}_save.json", "w") as f:
-                        json.dump(game_settings, f)
+                        dump(game_settings, f)
                     font = pygame.font.Font(None, 36)
                     text = font.render("Game saved! Press any key to continue.", True, (0,0,0))
                     text_rect = text.get_rect(center=(850,500))
@@ -824,13 +823,12 @@ def main():
                 elif LOAD:
                     file = event.text
                     with open(f"{file}", "r") as f:
-                        data = json.load(f)
+                        data = load(f)
 
                     wall_repel_distance = data["parameters"]["wall_repel_distance"]
                     wall_repel_strength = data["parameters"]["wall_repel_strength"]
                     particle_repel_force = data["parameters"]["particle_repel_force"]
                     rate = data["parameters"]["rate"]
-                    attrition = data["parameters"]["attrition"]
                     evolution = data["parameters"]["evolution"]
                     neighbor_dist = data["parameters"]["neighbor_dist"]
                     neighbor_num = data["parameters"]["neighbor_num"]
@@ -839,7 +837,6 @@ def main():
                     friction_half_life = data["parameters"]["friction_half_life"]
                     beta = data["parameters"]["beta"]
                     force_factor = data["parameters"]["force_factor"]
-                    attrition_timer = data["parameters"]["attrition_timer"]
                     pt.red_count = data["parameters"]["red_count"]
                     pt.green_count = data["parameters"]["green_count"]
                     pt.blue_count = data["parameters"]["blue_count"]
