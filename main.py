@@ -35,17 +35,16 @@ def main():
     particule_num_y = 30
     button_y = 120
     dropdown_y = 235
-    slider_y = 310
+    slider_y = 315
     attraction_matrix_y = 580
-    save_load_y = 890
-    footer_y = 930
+    footer_y = 900
+    credit_y = 970
 
     # Controls frame rate
     rate = 60
     dt = 1/rate
 
-    # Flag to determine whether particles should die randomly
-    attrition = False
+    # Flag to determine whether evolution is on or off
     evolution = True
 
     # Distance to neighbors, for evolution purposes
@@ -144,29 +143,25 @@ def main():
                                             text="TOTAL", manager=manager)
     total_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,particule_num_y + 50),(50,30)),
                                                         manager=manager, initial_text=f"{num_particles}")
-    
-
 
     reset_sliders_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((30, button_y), (140, 30)),
                                             text='Reset Sliders', manager=manager)
-    new_matrix_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((30, button_y+30), (140, 30)),
-                                            text='New Forces', manager=manager)
     new_particles_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, button_y), (140, 30)),
                                             text='New Particles', manager=manager)
-    pause_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, button_y+30), (140, 30)),
+    new_matrix_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((100, button_y+30), (140, 30)),
+                                            text='New Forces', manager=manager)
+    pause_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((30, button_y+60), (140, 30)),
                                             text='Pause Sim', manager=manager)
-    restart_all_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((100, button_y+60), (140, 30)),
+    restart_all_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, button_y+60), (140, 30)),
                                             text='Restart Sim', manager=manager)
+    save_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((30, button_y+90), (140, 30)),
+                                            text='Save Sim', manager=manager)
+    load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, button_y+90), (140, 30)),
+                                            text='Load Sim', manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, dropdown_y), (224,25)),
-                                                 text="Particles will randomly die:", manager=manager)
-    attrition_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((250, dropdown_y), (80,25)),
-                                                         options_list=["False", "True"], starting_option="False",
-                                                         manager=manager)
-    
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, dropdown_y + 30), (224,25)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, dropdown_y+30), (224,25)),
                                                  text="Particles will evolve:", manager=manager)
-    evolution_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((250, dropdown_y + 30), (80,25)),
+    evolution_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((230, dropdown_y+30), (80,25)),
                                                          options_list=["False", "True"], starting_option="True",
                                                          manager=manager)
     
@@ -349,10 +344,6 @@ def main():
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, attraction_matrix_y+250), (50, 20)),
                                                 text="C-C", manager=manager)
 
-    save_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((30, save_load_y), (140, 30)),
-                                            text='Save Sim', manager=manager)
-    load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, save_load_y), (140, 30)),
-                                            text='Load Sim', manager=manager)
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, footer_y), (120, 20)),
                                 text="Total Time: ", manager=manager)
 
@@ -376,7 +367,7 @@ def main():
     loops_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, footer_y+20), (60, 20)),
                                              text=f"{total_num_loops}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, footer_y+40), (300, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, credit_y), (330, 20)),
                                 text="Particle Life, by David Vance, 2024",
                                 manager=manager)
 
@@ -632,11 +623,6 @@ def main():
 
             # Handle drop down selections
             elif event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
-                if event.ui_element == attrition_menu:
-                    if event.text == "False":
-                        attrition = False
-                    else:
-                        attrition = True
                 if event.ui_element == evolution_menu:
                     if event.text == "False":
                         evolution = False
@@ -1074,30 +1060,6 @@ def main():
             for particle in particles:
                 particle.x += (particle.x_vel * dt)
                 particle.y += (particle.y_vel * dt)
-
-            # Kill off 1 particles per second if attrition is set to true
-            if attrition:
-                attrition_timer -= dt
-                if attrition_timer <= 0:
-                    if num_particles == 0:
-                        running = False
-                    i = randint(0, num_particles - 1)
-                    match particles[i].color:
-                        case 0:
-                            pt.red_count -=1
-                        case 1:
-                            pt.green_count -=1
-                        case 2:
-                            pt.blue_count -=1
-                        case 3:
-                            pt.purple_count -=1
-                        case 4:
-                            pt.yellow_count -=1
-                        case 5:
-                            pt.cyan_count -=1
-                    particles.pop(i)
-                    num_particles -= 1
-                    attrition_timer = 1
             
             # Controls evolution if evolution is set to true
             if evolution:
