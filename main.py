@@ -52,7 +52,7 @@ def main():
     neighbor_dist = 25
 
     # Number of neighbors within neighbor_dist that triggers reproduction
-    neighbor_num = 6
+    neighbor_num = 10
 
     # Number of loops bewteen evolution steps
     life_expect_loops = 750
@@ -1115,7 +1115,7 @@ def main():
                         else:
                             chance = 0
                         if random() < chance:
-                            new_particle = pt(x=particle.x, y=particle.y, color=particle.color, size=particle.size)
+                            new_particle = pt(x=particle.x+2*particle.size, y=particle.y+2*particle.size, color=particle.color, size=particle.size)
                             particles.append(new_particle)
                             num_particles += 1
 

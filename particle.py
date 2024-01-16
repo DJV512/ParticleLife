@@ -1,4 +1,4 @@
-import random
+from random import choice, random
 from numpy import ndarray
 from pygame import draw
 
@@ -17,11 +17,11 @@ class Particle:
         '''
         # Random initial position for brand new particles, matching position to parent if offspring
         if x == None:
-            self.x = random.random() * 1000
+            self.x = random() * 1000
         else:
             self.x = x
         if y == None:
-            self.y = random.random() * 1000
+            self.y = random() * 1000
         else:
             self.y = y
 
@@ -44,16 +44,15 @@ class Particle:
         else:
             self.age = age
 
-
         # Initialize the size. Random at the start of the sim, or equal to its parent if it's a new particle, or from a loaded file
         if size == None:
-            self.size = random.choice([1,2,3,4,5,6,7,8,9,10])
+            self.size = choice([1,2,3,4,5,6])
         else:
             self.size = size
 
         # Initialize the color. Random at the start of the sim, or equal to its parent if it's a new particle, or from a loaded file
         if color == None:
-            self.color = random.choice([0,1,2,3,4,5])
+            self.color = choice([0,1,2,3,4,5])
         else:
             self.color = color
 
@@ -80,7 +79,7 @@ class Particle:
         attract_matrix = ndarray(shape=(6, 6), dtype=float)
         for i in range(6):
             for j in range(6):
-                attract_matrix[i][j] = random.random() * 2 - 1 
+                attract_matrix[i][j] = random() * 2 - 1 
         return attract_matrix 
 
     def intra_particle_dist(self, other):
