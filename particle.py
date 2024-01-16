@@ -1,6 +1,6 @@
 import random
 from numpy import ndarray
-import pygame
+from pygame import draw
 
 class Particle:
     red_count = 0
@@ -107,4 +107,4 @@ class Particle:
         '''
         Given a particle object, draws it on the simulation_screen surface.
         '''
-        pygame.draw.circle(simulation_screen, Particle.COLORS[self.color], (self.x, self.y), self.size)
+        draw.circle(simulation_screen, Particle.COLORS[self.color], (self.x, self.y), self.size)
