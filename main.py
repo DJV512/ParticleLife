@@ -91,6 +91,10 @@ def main():
     SAVE = False
     LOAD = False
 
+    # Mouse parameters
+    mouse_radius = 50
+    grab = False
+
     # Make num_particles number of randomly positioned and colored parrticles
     particles = [pt() for _ in range(num_particles)]
 
@@ -634,6 +638,38 @@ def main():
                     else:
                         evolution = True
 
+            # Mouse clicking grabs all particles in mouse radius
+            elif event.type == pygame.MOUSEBUTTONDOWN and not grab:
+                paused = True
+                grab = True
+                m_x, m_y = pygame.mouse.get_pos()
+                m_x -= 330
+                grabbed = []
+                for particle in particles:
+                    r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
+                    if r < mouse_radius:
+                        grabbed.append(particle)
+                m_x_current = m_x
+                m_y_current = m_y
+            
+            # Mouse dragging moves all particles in mouse radius
+            elif event.type == pygame.MOUSEMOTION and grab:
+                m_x, m_y = pygame.mouse.get_pos()
+                m_x -= 330
+                change_x = m_x - m_x_current
+                change_y = m_y - m_y_current
+                for particle in grabbed:
+                    particle.x += change_x
+                    particle.y += change_y
+                m_x_current = m_x
+                m_y_current = m_y
+
+            # Letting go of mouse removes all particles from being grabbed
+            elif event.type == pygame.MOUSEBUTTONUP and grab:
+                grabbed = []
+                grab = False
+                paused = False
+
             # Handle button click
             elif event.type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == reset_sliders_button:
@@ -960,10 +996,21 @@ def main():
 
             # Removes already processed events from the list of events
             manager.process_events(event)
+        
+        # Fill the background color
+        screen.fill(BLACK)
+        panel.fill(BLACK)
+        simulation_screen.fill(BLACK)
+
+        # Draws a white rectangle under the control panel so that it appears to have a white border
+        pygame.draw.rect(panel, WHITE, pygame.Rect(0, 0, panel_size_x, screen_size_y), width=3)
+
+        # Draw all particles onto the simulation_screen surface
+        for particle in particles:
+            particle.draw(simulation_screen)
 
         # Where the magic happens
         if not paused:
-
             # Update particle color numbers
             red_count_entry.set_text(f"{pt.red_count}")
             green_count_entry.set_text(f"{pt.green_count}")
@@ -972,18 +1019,6 @@ def main():
             yellow_count_entry.set_text(f"{pt.yellow_count}")
             cyan_count_entry.set_text(f"{pt.cyan_count}")
             total_count_entry.set_text(f"{num_particles}")
-
-            # Fill the background color
-            screen.fill(BLACK)
-            panel.fill(BLACK)
-            simulation_screen.fill(BLACK)
-
-            # Draws a white rectangle under the control panel so that it appears to have a white border
-            pygame.draw.rect(panel, WHITE, pygame.Rect(0, 0, panel_size_x, screen_size_y), width=3)
-
-            # Draw all particles onto the simulation_screen surface
-            for particle in particles:
-                particle.draw(simulation_screen)
 
             # Update particle velocities
             oldest_particle = 0
@@ -1126,6 +1161,11 @@ def main():
 
         # Keeps track of the oldest particle in the sim
         oldest_text.set_text(f"{oldest_particle}")
+
+        # Get mouse position
+        m_x, m_y = pygame.mouse.get_pos()
+
+        pygame.draw.circle(simulation_screen, WHITE, (m_x-330, m_y), mouse_radius, 1)
 
         #Determine length of time it took the current iteration of the game loop to run, and calculate actual FPS
         t1 = time()
