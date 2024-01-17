@@ -7,6 +7,7 @@ import pygame_gui
 from random import random
 from sys import executable, argv
 from time import time
+from wall import Wall
 
 
 def wait_for_click():
@@ -24,8 +25,8 @@ def main():
     WHITE = (255,255,255)
 
     # Screen size parameters
-    screen_size_x = 1340
-    panel_size_x = 340
+    screen_size_x = 1540
+    panel_size_x = 540
     simulation_size_x = screen_size_x - panel_size_x
     screen_size_y = 1000
     wall_repel_distance = 5
@@ -33,13 +34,13 @@ def main():
     particle_repel_force = 8
 
     # GUI Element Top Left positions
-    particule_num_y = 30
-    button_y = 120
-    dropdown_y = 235
+    credit_y = 10
+    button_y = 50
+    particle_num_y = 120
+    dropdown_y = 200
     slider_y = 315
     attraction_matrix_y = 580
     footer_y = 900
-    credit_y = 970
 
     # Controls frame rate
     rate = 60
@@ -92,8 +93,14 @@ def main():
     LOAD = False
 
     # Mouse parameters
+    mouse_mode = "grab"
     mouse_radius = 50
     grab = False
+    add_particles = False
+    remove_particles = False
+    draw_wall = False
+    remove_wall = False
+    walls = []
 
     # Make num_particles number of randomly positioned and colored parrticles
     particles = [pt() for _ in range(num_particles)]
@@ -109,63 +116,73 @@ def main():
     pygame.display.set_caption("Particle Life")
     screen = pygame.display.set_mode([screen_size_x, screen_size_y])
     simulation_screen = pygame.Surface((simulation_size_x, screen_size_y))
-    panel = pygame.Surface((panel_size_x,screen_size_y))
+    panel = pygame.Surface((panel_size_x, screen_size_y))
     manager = pygame_gui.UIManager((panel_size_x, screen_size_y), 'theme.json')
 
     # Control panel text and values
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0,particule_num_y-20),(330,20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, credit_y), (540, 30)),
+                                text="Particle Life, by David Vance, 2024",
+                                manager=manager)
+    
+    pause_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((15, button_y), (120, 30)),
+                                            text='Pause Sim', manager=manager)
+    restart_all_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((145, button_y), (120, 30)),
+                                            text='Restart Sim', manager=manager)
+    save_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((275, button_y), (120, 30)),
+                                            text='Save Sim', manager=manager)
+    load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((405, button_y), (120, 30)),
+                                            text='Load Sim', manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0,particle_num_y-20),(330,20)),
                                                text="Number of particles of each color",
                                                manager=manager)
 
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, particule_num_y), (50, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((20, particle_num_y), (50, 20)),
                                             text="RED", manager=manager)
-    red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,particule_num_y + 20),(50,30)),
+    red_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((20,particle_num_y + 20),(50,30)),
                                                         manager=manager, initial_text=f"{pt.red_count}")
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, particule_num_y), (50, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((70, particle_num_y), (50, 20)),
                                             text="GRN", manager=manager)
-    green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,particule_num_y + 20),(50,30)),
+    green_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((70,particle_num_y + 20),(50,30)),
                                                         manager=manager, initial_text=f"{pt.green_count}")
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, particule_num_y), (50, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, particle_num_y), (50, 20)),
                                             text="BLU", manager=manager)
-    blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,particule_num_y + 20),(50,30)),
+    blue_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((120,particle_num_y + 20),(50,30)),
                                                         manager=manager, initial_text=f"{pt.blue_count}")
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, particule_num_y), (50, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((170, particle_num_y), (50, 20)),
                                             text="PUR", manager=manager)
-    purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,particule_num_y + 20),(50,30)),
+    purple_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,particle_num_y + 20),(50,30)),
                                                         manager=manager, initial_text=f"{pt.purple_count}")
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, particule_num_y), (50, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((220, particle_num_y), (50, 20)),
                                             text="YEL", manager=manager)
-    yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,particule_num_y + 20),(50,30)),
+    yellow_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((220,particle_num_y + 20),(50,30)),
                                                         manager=manager, initial_text=f"{pt.yellow_count}")
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, particule_num_y), (50, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, particle_num_y), (50, 20)),
                                             text="CYN", manager=manager)
-    cyan_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,particule_num_y + 20),(50,30)),
+    cyan_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((270,particle_num_y + 20),(50,30)),
                                                         manager=manager, initial_text=f"{pt.cyan_count}")
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, particule_num_y + 55), (50, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((340, particle_num_y), (50, 20)),
                                             text="TOTAL", manager=manager)
-    total_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((170,particule_num_y + 50),(50,30)),
+    total_count_entry = pygame_gui.elements.UITextEntryLine(relative_rect=pygame.Rect((340,particle_num_y + 20),(50,30)),
                                                         manager=manager, initial_text=f"{num_particles}")
-
-    reset_sliders_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((30, button_y), (140, 30)),
-                                            text='Reset Sliders', manager=manager)
-    new_particles_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, button_y), (140, 30)),
-                                            text='New Particles', manager=manager)
-    new_matrix_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((100, button_y+30), (140, 30)),
-                                            text='New Forces', manager=manager)
-    pause_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((30, button_y+60), (140, 30)),
-                                            text='Pause Sim', manager=manager)
-    restart_all_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, button_y+60), (140, 30)),
-                                            text='Restart Sim', manager=manager)
-    save_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((30, button_y+90), (140, 30)),
-                                            text='Save Sim', manager=manager)
-    load_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((170, button_y+90), (140, 30)),
-                                            text='Load Sim', manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, dropdown_y+30), (224,25)),
-                                                 text="Particles will evolve:", manager=manager)
-    evolution_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((230, dropdown_y+30), (80,25)),
-                                                         options_list=["False", "True"], starting_option="True",
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((400, particle_num_y), (150,20)),
+                                                 text="Evolution", manager=manager)
+    evolution_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((435, particle_num_y+20), (80,30)),
+                                                         options_list=["On", "Off"], starting_option="On",
                                                          manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((25, dropdown_y), (100,30)),
+                                                 text="Mouse Mode", manager=manager)
+    mouse_mode_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((125, dropdown_y), (200,30)),
+                                                         options_list=["Grab Particles", "Add Particles", "Remove Particles", "Add Wall", "Remove Wall"], starting_option="Grab Particles",
+                                                         manager=manager)
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((355, dropdown_y), (100,30)),
+                                                 text="Mouse Size", manager=manager)
+    mouse_radius_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((455, dropdown_y), (50,30)),
+                                                         options_list=["10","30","50","70","90"], starting_option="50",
+                                                         manager=manager)
+
     
     slider_beta = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((20, slider_y + 20), (300, 20)),
                                                          start_value=beta, value_range=(0, 1), manager=manager)
@@ -190,6 +207,13 @@ def main():
     text_rmax = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((15, slider_y+150), (290, 20)),
                                             text=f"rMax (dist of interaction): {slider_rmax.get_current_value():.2f}",
                                             manager=manager)
+    
+    reset_sliders_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+40), (140, 30)),
+                                            text='Reset Sliders', manager=manager)
+    new_particles_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+90), (140, 30)),
+                                            text='New Particles', manager=manager)
+    new_matrix_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+140), (140, 30)),
+                                            text='New Forces', manager=manager)
 
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, attraction_matrix_y-50), (330,20)),
                                                    text="Forces between colors (changeable)", manager=manager)
@@ -369,9 +393,7 @@ def main():
     loops_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, footer_y+20), (60, 20)),
                                              text=f"{total_num_loops}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, credit_y), (330, 20)),
-                                text="Particle Life, by David Vance, 2024",
-                                manager=manager)
+
 
     # Start the game loop
     running = True
@@ -632,43 +654,163 @@ def main():
 
             # Handle drop down selections
             elif event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
+                # Turn evolution on or off
                 if event.ui_element == evolution_menu:
-                    if event.text == "False":
+                    if event.text == "Off":
                         evolution = False
                     else:
                         evolution = True
-
-            # Mouse clicking grabs all particles in mouse radius
-            elif event.type == pygame.MOUSEBUTTONDOWN and not grab:
-                paused = True
-                grab = True
-                m_x, m_y = pygame.mouse.get_pos()
-                m_x -= 330
-                grabbed = []
-                for particle in particles:
-                    r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
-                    if r < mouse_radius:
-                        grabbed.append(particle)
-                m_x_current = m_x
-                m_y_current = m_y
+                
+                # Handles changes in mouse mode
+                elif event.ui_element == mouse_mode_menu:
+                    if event.text == "Grab Particles":
+                        mouse_mode = "grab"
+                    elif event.text == "Add Particles":
+                        mouse_mode = "add"
+                    elif event.text == "Remove Particles":
+                        mouse_mode = "remove"
+                    elif event.text == "Add Wall":
+                        mouse_mode = "wall"
+                    elif event.text == "Remove Wall":
+                        mouse_mode = "remove_wall"
+                
+                # Handles changes in mouse size
+                elif event.ui_element == mouse_radius_menu:
+                    if event.text == "10":
+                        mouse_radius = 10
+                    elif event.text == "30":
+                        mouse_radius = 30
+                    elif event.text == "50":
+                        mouse_radius = 50
+                    elif event.text == "70":
+                        mouse_radius = 70
+                    elif event.text == "90":
+                        mouse_radius = 90
             
-            # Mouse dragging moves all particles in mouse radius
-            elif event.type == pygame.MOUSEMOTION and grab:
-                m_x, m_y = pygame.mouse.get_pos()
-                m_x -= 330
-                change_x = m_x - m_x_current
-                change_y = m_y - m_y_current
-                for particle in grabbed:
-                    particle.x += change_x
-                    particle.y += change_y
-                m_x_current = m_x
-                m_y_current = m_y
+            #Handle mouse clicks
+            elif event.type == pygame.MOUSEBUTTONDOWN:
 
-            # Letting go of mouse removes all particles from being grabbed
-            elif event.type == pygame.MOUSEBUTTONUP and grab:
-                grabbed = []
-                grab = False
-                paused = False
+                # When grab is selected, mouse clicking grabs all particles in mouse radius
+                if mouse_mode == "grab" and not grab and not paused:
+                    paused = True
+                    grab = True
+                    m_x, m_y = pygame.mouse.get_pos()
+                    m_x -= panel_size_x
+                    grabbed = []
+                    for particle in particles:
+                        r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
+                        if r < mouse_radius:
+                            grabbed.append(particle)
+                    m_x_current = m_x
+                    m_y_current = m_y
+
+                # When add is selected, mouse clicking makes a new random particle
+                elif mouse_mode == "add":
+                    add_particles = True
+                    m_x, m_y = pygame.mouse.get_pos()
+                    particles.append(pt(x=m_x-panel_size_x, y=m_y))
+                    num_particles += 1
+                
+                # When remove is selected, mouse clicking removes all particles in the mouse radius
+                elif mouse_mode == "remove":
+                    remove_particles = True
+                    m_x, m_y = pygame.mouse.get_pos()
+                    m_x -= panel_size_x
+                    for particle in particles.copy():
+                        r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
+                        if r < mouse_radius:
+                            particles.remove(particle)
+                            num_particles -= 1
+
+                # When wall is selected, mouse clicking will draw wall
+                elif mouse_mode == "wall":
+                    draw_wall = True
+                    m_x, m_y = pygame.mouse.get_pos()
+                    m_x -= panel_size_x
+                    walls.append(Wall(m_x, m_y))
+                
+                # When remove wall is selected, mouse clicking will remove wall
+                elif mouse_mode == "remove_wall":
+                    remove_wall = True
+                    m_x, m_y = pygame.mouse.get_pos()
+                    m_x -= panel_size_x
+                    for wall in walls.copy():
+                        r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
+                        if r < mouse_radius:
+                            walls.remove(wall)
+
+                    
+            # Handle mouse motion 
+            elif event.type == pygame.MOUSEMOTION:
+
+                # Mouse dragging moves all particles in mouse radius
+                if grab:
+                    m_x, m_y = pygame.mouse.get_pos()
+                    m_x -= panel_size_x
+                    change_x = m_x - m_x_current
+                    change_y = m_y - m_y_current
+                    for particle in grabbed:
+                        particle.x += change_x
+                        particle.y += change_y
+                    m_x_current = m_x
+                    m_y_current = m_y
+
+                # Mouse dragging continues removing particles
+                elif remove_particles:
+                    m_x, m_y = pygame.mouse.get_pos()
+                    m_x -= panel_size_x
+                    for particle in particles.copy():
+                        r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
+                        if r < mouse_radius:
+                            particles.remove(particle)
+                            num_particles -= 1
+
+                # Mouse dragging continues to add new particles
+                elif add_particles:
+                    m_x, m_y = pygame.mouse.get_pos()
+                    particles.append(pt(x=m_x-panel_size_x, y=m_y))
+                    num_particles += 1
+                
+                # Mouse dragging draws more wall pieces
+                elif draw_wall:
+                    m_x, m_y = pygame.mouse.get_pos()
+                    m_x -= panel_size_x
+                    walls.append(Wall(m_x, m_y))
+
+                # Mouse dragging removes more wall pieces
+                elif remove_wall:
+                    m_x, m_y = pygame.mouse.get_pos()
+                    m_x -= panel_size_x
+                    for wall in walls.copy():
+                        r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
+                        if r < mouse_radius:
+                            walls.remove(wall)
+
+            # Handle releasing mouse button
+            elif event.type == pygame.MOUSEBUTTONUP:
+            
+                # Letting go of mouse button releases all grabbed particles
+                if grab:
+                    grabbed = []
+                    grab = False
+                    paused = False
+                
+                # Letting go stops drawing particles
+                elif add_particles:
+                    add_particles = False
+                
+                # Letting go stops removing particles
+                elif remove_particles:
+                    remove_particles = False
+                
+                # Letting go of mouse stops drawing wall
+                elif draw_wall:
+                    draw_wall = False
+                
+                # Letting go of mouse stops removing wall
+                elif remove_wall:
+                    remove_wall = False
+
 
             # Handle button click
             elif event.type == pygame_gui.UI_BUTTON_PRESSED:
@@ -1008,18 +1150,18 @@ def main():
         # Draw all particles onto the simulation_screen surface
         for particle in particles:
             particle.draw(simulation_screen)
+        
+        # Update particle color numbers
+        red_count_entry.set_text(f"{pt.red_count}")
+        green_count_entry.set_text(f"{pt.green_count}")
+        blue_count_entry.set_text(f"{pt.blue_count}")
+        purple_count_entry.set_text(f"{pt.purple_count}")
+        yellow_count_entry.set_text(f"{pt.yellow_count}")
+        cyan_count_entry.set_text(f"{pt.cyan_count}")
+        total_count_entry.set_text(f"{num_particles}")
 
         # Where the magic happens
         if not paused:
-            # Update particle color numbers
-            red_count_entry.set_text(f"{pt.red_count}")
-            green_count_entry.set_text(f"{pt.green_count}")
-            blue_count_entry.set_text(f"{pt.blue_count}")
-            purple_count_entry.set_text(f"{pt.purple_count}")
-            yellow_count_entry.set_text(f"{pt.yellow_count}")
-            cyan_count_entry.set_text(f"{pt.cyan_count}")
-            total_count_entry.set_text(f"{num_particles}")
-
             # Update particle velocities
             oldest_particle = 0
             many_neighbors = []
@@ -1165,7 +1307,12 @@ def main():
         # Get mouse position
         m_x, m_y = pygame.mouse.get_pos()
 
-        pygame.draw.circle(simulation_screen, WHITE, (m_x-330, m_y), mouse_radius, 1)
+        pygame.draw.circle(simulation_screen, WHITE, (m_x-panel_size_x, m_y), mouse_radius, 1)
+
+        #Draw the wall
+        if len(walls) != 0:
+            for wall in walls:
+                wall.draw_wall(simulation_screen)
 
         #Determine length of time it took the current iteration of the game loop to run, and calculate actual FPS
         t1 = time()
