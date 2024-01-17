@@ -3,15 +3,9 @@ from numpy import ndarray
 from pygame import draw
 
 class Particle:
-    red_count = 0
-    green_count = 0
-    blue_count = 0
-    purple_count = 0
-    yellow_count = 0
-    cyan_count = 0
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, mutate=None, load=False):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, mutate=None):
         '''
         Initializes a new object of the particle class.
         '''
@@ -55,21 +49,6 @@ class Particle:
             self.color = choice([0,1,2,3,4,5])
         else:
             self.color = color
-
-        #Keep track of the number of each color particle if these are new particles, not from a load
-        if not load:
-            if self.color == 0:
-                Particle.red_count += 1
-            elif self.color == 1:
-                Particle.green_count += 1
-            elif self.color == 2:
-                Particle.blue_count += 1
-            elif self.color == 3:
-                Particle.purple_count += 1
-            elif self.color == 4:
-                Particle.yellow_count += 1
-            elif self.color == 5:
-                Particle.cyan_count += 1
 
     @staticmethod
     def new_matrix():

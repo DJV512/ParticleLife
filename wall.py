@@ -1,10 +1,10 @@
 from pygame import draw, Rect
 
 class Wall:
-    '''
-    Initializes a new piece of wall.
-    '''
     def __init__(self, x, y):
+        '''
+        Initializes a new piece of wall.
+        '''
         self.x = x
         self.y = y
     
