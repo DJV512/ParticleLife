@@ -2,7 +2,7 @@
 import random
 import pygame
    
-def main():
+fn main():
 
     let BLACK: Tuple[Int, Int, Int] = (0,0,0)
     let WHITE: Tuple[Int, Int, Int] = (255,255,255)
