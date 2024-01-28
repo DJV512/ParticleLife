@@ -736,7 +736,7 @@ def main():
                     draw_wall = True
                     m_x, m_y = pygame.mouse.get_pos()
                     m_x -= panel_size_x
-                    walls.append(Wall(m_x, m_y))
+                    walls.append(Wall(m_x, m_y, mouse_radius))
                     num_walls += 1
                 
                 # When remove wall is selected, mouse clicking will remove wall
@@ -786,7 +786,7 @@ def main():
                 elif draw_wall:
                     m_x, m_y = pygame.mouse.get_pos()
                     m_x -= panel_size_x
-                    walls.append(Wall(m_x, m_y))
+                    walls.append(Wall(m_x, m_y, mouse_radius))
                     num_walls += 1
 
                 # Mouse dragging removes more wall pieces

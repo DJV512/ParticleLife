@@ -1,15 +1,16 @@
 from pygame import draw, Rect
 
 class Wall:
-    def __init__(self, x, y):
+    def __init__(self, x, y, size):
         '''
         Initializes a new piece of wall.
         '''
         self.x = x
         self.y = y
+        self.size = size
     
     def draw_wall(self, simulation_screen):
         '''
         Draws a wall piece.
         '''
-        draw.rect(simulation_screen, (255,255,255), Rect(self.x, self.y, 5, 5))
+        draw.circle(simulation_screen, (255,255,255), (self.x, self.y), self.size)
