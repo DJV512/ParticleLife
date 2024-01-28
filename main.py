@@ -1,5 +1,6 @@
 from json import dump, load
 from math import atan2, cos, sin
+from operator import attrgetter
 from os import execl
 from particle import Particle as pt
 import pygame
@@ -29,8 +30,6 @@ def main():
     panel_size_x = 540
     simulation_size_x = screen_size_x - panel_size_x
     screen_size_y = 1000
-    edge_repel_distance = 5
-    wall_repel_strength = 25
     particle_repel_force = 8
 
     # GUI Element Top Left positions
@@ -1173,16 +1172,15 @@ def main():
             yellow_count = 0
             cyan_count = 0
 
+            # Determine which particle is the oldest
+            oldest_particle = max(particles, key=attrgetter("age"))
+
             # Cycle through all particles
             for particle1 in particles:
 
-                # Check to see if particle1 is past its life expentancy
+                # Check to see if particle1 is past its life expectancy
                 if particle1.age > life_expect_loops:
                     old_particles.append(particle1)
-
-                # Check to see if particle1 is the longest lived particle
-                if particle1.age > oldest_particle:
-                    oldest_particle = particle1.age
                 
                 # Keeps track of the number of each color of particle
                 match particle1.color:
@@ -1229,30 +1227,6 @@ def main():
                 # Increment particle1's age
                 particle1.age += 1
 
-                # Make particles repel off the simulation screen edges
-                distance_to_right_edge = simulation_size_x - particle1.x
-                distance_to_bottom_edge = screen_size_y - particle1.y
-
-                if distance_to_right_edge < edge_repel_distance and distance_to_right_edge > 0:
-                    accel_x -= (wall_repel_strength - distance_to_right_edge/edge_repel_distance)
-                elif distance_to_right_edge < 0:
-                    accel_x -= wall_repel_strength * (1 - distance_to_right_edge/edge_repel_distance)
-
-                if distance_to_bottom_edge < edge_repel_distance and distance_to_bottom_edge > 0:
-                    accel_y -= (wall_repel_strength - distance_to_bottom_edge/edge_repel_distance)
-                elif distance_to_bottom_edge < 0:
-                    accel_y -= wall_repel_strength * (1-distance_to_bottom_edge/edge_repel_distance)
-
-                if particle1.x < edge_repel_distance and particle1.x > 0:
-                    accel_x += wall_repel_strength - particle1.x/edge_repel_distance
-                elif particle1.x < 0:
-                    accel_x += wall_repel_strength * (1 - particle1.x/edge_repel_distance)
-
-                if particle1.y < edge_repel_distance and particle1.y > 0:
-                    accel_y += wall_repel_strength - particle1.y/edge_repel_distance
-                elif particle1.y < 0:
-                    accel_y += wall_repel_strength * (1 - particle1.y/edge_repel_distance)
-                
                 # Scaling factor for the strength of the attraction or repulsion force
                 accel_x *= rmax * force_factor
                 accel_y *= rmax * force_factor
@@ -1266,9 +1240,18 @@ def main():
                 particle1.y_vel += (accel_y * dt)
 
             # Update all particle positions based on x and y velocity and the time step
+            # If the particle tries to go off the screen, don't let it.
             for particle in particles:
                 particle.x += (particle.x_vel * dt)
+                if particle.x < 0:
+                    particle.x = 0
+                elif particle.x > simulation_size_x:
+                    particle.x = simulation_size_x
                 particle.y += (particle.y_vel * dt)
+                if particle.y < 0:
+                    particle.y = 0
+                elif particle.y > screen_size_y:
+                    particle.y = screen_size_y
             
             # Controls evolution if evolution is set to true
             if evolution:
@@ -1331,7 +1314,7 @@ def main():
         loops_text.set_text(f"{total_num_loops}")
 
         # Updates the text to show the oldest particle in the sim
-        oldest_text.set_text(f"{oldest_particle}")
+        oldest_text.set_text(f"{oldest_particle.age}")
 
         # Get mouse position and draw a circle around it
         m_x, m_y = pygame.mouse.get_pos()
