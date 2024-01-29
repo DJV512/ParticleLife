@@ -1,3 +1,4 @@
+from food import Food
 from json import dump, load
 from math import atan2, cos, sin
 from operator import attrgetter
@@ -72,15 +73,19 @@ def main():
     default_force_factor = 5
 
     # Starting number of particle defaults
-    default_num_particles = 300
+    default_num_particles = 1
     num_particles = default_num_particles
     oldest_particle = 0
+    no_oldest_particle = 0
     red_count = 0
     green_count = 0
     blue_count = 0
     purple_count = 0
     yellow_count = 0
     cyan_count = 0
+
+    # How many food particles at the start
+    starting_num_food = 100
 
     # Default values
     rmax = default_rmax
@@ -114,6 +119,9 @@ def main():
 
     # Randomize an attraction matrix for all colors
     attract_matrix = pt.new_matrix()
+
+    # Randomize initial food positions
+    food_pieces = [Food() for _ in range(starting_num_food)]
 
     # Initialize the game and set the clock
     pygame.init()
@@ -1159,9 +1167,13 @@ def main():
         for particle in particles:
             particle.draw(simulation_screen)
 
+        # Draw all food onto the simulation_screen surface
+        for food in food_pieces:
+            food.draw(simulation_screen)
+
         # Where the magic happens
         if not paused:
-            # Update particle velocities
+            # Update particle velocities and positions
             oldest_particle = 0
             many_neighbors = []
             old_particles = []
@@ -1173,7 +1185,8 @@ def main():
             cyan_count = 0
 
             # Determine which particle is the oldest
-            oldest_particle = max(particles, key=attrgetter("age"))
+            if num_particles > 0:
+                oldest_particle = max(particles, key=attrgetter("age"))
 
             # Cycle through all particles
             for particle1 in particles:
@@ -1276,6 +1289,7 @@ def main():
                         else:
                             chance = 1
                         if random() < chance:
+                            food_pieces.append(Food(particle.x, particle.y, particle.size))
                             particles.remove(particle)
                             num_particles -= 1
 
@@ -1297,8 +1311,8 @@ def main():
                             num_particles += 1
 
                     # Check to make sure the sim should keep running
-                    if num_particles == 0:
-                        running = False
+                    # if num_particles == 0:
+                    #     running = False
 
         # Update particle color numbers
         red_count_entry.set_text(f"{red_count}")
@@ -1314,7 +1328,10 @@ def main():
         loops_text.set_text(f"{total_num_loops}")
 
         # Updates the text to show the oldest particle in the sim
-        oldest_text.set_text(f"{oldest_particle.age}")
+        if num_particles > 0:
+            oldest_text.set_text(f"{oldest_particle.age}")
+        else:
+            oldest_text.set_text(f"{no_oldest_particle}")
 
         # Get mouse position and draw a circle around it
         m_x, m_y = pygame.mouse.get_pos()
@@ -1338,7 +1355,8 @@ def main():
             ttotal_sec = int((t1-tstart)%60)
         total_time_text.set_text(f"{ttotal_min}:{ttotal_sec:02d}")
 
-         # Update the control panel, draw the control panel, and paste the control panel and simulation surfaces onto the main screen
+        # Update the control panel, draw the control panel
+        # Paste the control panel and simulation surfaces onto the main screen
         manager.update(loop_length)        
         manager.draw_ui(panel)
         screen.blit(panel, (0,0))
