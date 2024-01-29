@@ -50,14 +50,8 @@ def main():
     # Flag to determine whether evolution is on or off
     evolution = True
 
-    # Distance to neighbors, for evolution purposes
-    neighbor_dist = 25
-
-    # Number of neighbors within neighbor_dist that triggers reproduction
-    neighbor_num = 10
-
-    # Number of loops bewteen evolution steps
-    life_expect_loops = 750
+    # Life expectancy of a particle, related to food intake
+    life_expect_loops = 1000
 
     # Counters for the total number of loops and total time
     total_num_loops = 0
@@ -68,12 +62,12 @@ def main():
 
     # Set default values for changeable parameters
     default_rmax = screen_size_y / 10
-    default_friction_half_life = 0.04
+    default_friction_half_life = 0.1
     default_beta = 0.1
     default_force_factor = 5
 
     # Starting number of particle defaults
-    default_num_particles = 1
+    default_num_particles = 200
     num_particles = default_num_particles
     oldest_particle = 0
     no_oldest_particle = 0
@@ -84,8 +78,11 @@ def main():
     yellow_count = 0
     cyan_count = 0
 
-    # How many food particles at the start
-    starting_num_food = 100
+    # Food settings
+    starting_num_food = 250
+    nutrition_to_survive = 4
+    nutrition_to_reproduce = 8
+    add_food_num_loops = 5
 
     # Default values
     rmax = default_rmax
@@ -1173,6 +1170,10 @@ def main():
 
         # Where the magic happens
         if not paused:
+
+            # Keep track of the total number of loops
+            total_num_loops +=1
+
             # Update particle velocities and positions
             oldest_particle = 0
             many_neighbors = []
@@ -1184,16 +1185,16 @@ def main():
             yellow_count = 0
             cyan_count = 0
 
+            # Add a new random piece of food every 10 loops
+            if total_num_loops % add_food_num_loops == 0:
+                food_pieces.append(Food())
+
             # Determine which particle is the oldest
             if num_particles > 0:
                 oldest_particle = max(particles, key=attrgetter("age"))
 
             # Cycle through all particles
             for particle1 in particles:
-
-                # Check to see if particle1 is past its life expectancy
-                if particle1.age > life_expect_loops:
-                    old_particles.append(particle1)
                 
                 # Keeps track of the number of each color of particle
                 match particle1.color:
@@ -1219,8 +1220,6 @@ def main():
                         continue
                     else:
                         rx, ry, r_centers, r_surfaces = particle1.intra_particle_dist(particle2)
-                        if r_centers < neighbor_dist:
-                            particle1.neighbors += 1
                         if r_centers > rmax:
                             continue
                         elif r_centers <= rmax and r_surfaces > 0:
@@ -1232,10 +1231,6 @@ def main():
                             theta = atan2(ry, rx)
                             accel_x += cos(theta) * particle_repel_force
                             accel_y += sin(theta) * particle_repel_force
-
-                # If particle1 has more than neighbor_sum neighbors, keep track of it (for evolution)
-                if particle1.neighbors > neighbor_num:
-                    many_neighbors.append(particle1)
                 
                 # Increment particle1's age
                 particle1.age += 1
@@ -1265,54 +1260,31 @@ def main():
                     particle.y = 0
                 elif particle.y > screen_size_y:
                     particle.y = screen_size_y
+
+            # Check if any particles have found food
+            for particle in particles:
+                for food in food_pieces.copy():
+                    if ((particle.x-food.x)**2 + (particle.y - food.y)**2)**(1/2) < (particle.size + food.size):
+                        particle.nutrition += food.size
+                        food_pieces.remove(food)
             
             # Controls evolution if evolution is set to true
             if evolution:
+                for particle in particles:
 
-                # If the total number of loops is a multiple of the life expectancy, do an evolution step
-                if total_num_loops % life_expect_loops == 0:
-
-                    # Particles past the "max" age will die with a probability proportional to how old they are
-                    for particle in old_particles:
-                        if particle.age < 2 * life_expect_loops:
-                            chance = 0.15
-                        elif particle.age < 4 * life_expect_loops:
-                            chance = 0.3
-                        elif particle.age < 6 * life_expect_loops:
-                            chance = 0.45
-                        elif particle.age < 8 * life_expect_loops:
-                            chance = 0.6
-                        elif particle.age < 10 * life_expect_loops:
-                            chance = 0.75
-                        elif particle.age < 12 * life_expect_loops:
-                            chance = 0.90
-                        else:
-                            chance = 1
-                        if random() < chance:
-                            food_pieces.append(Food(particle.x, particle.y, particle.size))
-                            particles.remove(particle)
-                            num_particles -= 1
-
-                    # Particles with many neighbors will reproduce at a rate proportional to their age
-                    for particle in many_neighbors:
-                        if particle.age < 2 * life_expect_loops:
-                            chance = 0.4
-                        elif particle.age < 4 * life_expect_loops:
-                            chance = 0.3
-                        elif particle.age < 6 * life_expect_loops:
-                            chance = 0.2
-                        elif particle.age < 8 * life_expect_loops:
-                            chance = 0.1
-                        else:
-                            chance = 0
-                        if random() < chance:
-                            new_particle = pt(x=particle.x+2*particle.size, y=particle.y+2*particle.size, color=particle.color, size=particle.size)
-                            particles.append(new_particle)
-                            num_particles += 1
-
-                    # Check to make sure the sim should keep running
-                    # if num_particles == 0:
-                    #     running = False
+                    # Particles that haven't found enough food will die
+                    age_multiple = particle.age/life_expect_loops
+                    if age_multiple > 1 and particle.nutrition < age_multiple * nutrition_to_survive:
+                        food_pieces.append(Food(particle.x, particle.y, particle.size))
+                        particles.remove(particle)
+                        num_particles -= 1
+                        
+                    # Particles with enough food reproduce
+                    if particle.nutrition - particle.reproduced * nutrition_to_reproduce >= nutrition_to_reproduce:
+                        new_particle = pt(x=particle.x+2*particle.size, y=particle.y+2*particle.size, color=particle.color, size=particle.size)
+                        particles.append(new_particle)
+                        num_particles += 1
+                        particle.reproduced += 1
 
         # Update particle color numbers
         red_count_entry.set_text(f"{red_count}")
@@ -1323,8 +1295,7 @@ def main():
         cyan_count_entry.set_text(f"{cyan_count}")
         total_count_entry.set_text(f"{num_particles}")
 
-        # Counts and prints the total number of loops in the lifetime of the current sim
-        total_num_loops +=1
+        # Updates the text for the total number of loops in the lifetime of the current sim
         loops_text.set_text(f"{total_num_loops}")
 
         # Updates the text to show the oldest particle in the sim

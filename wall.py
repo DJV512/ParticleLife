@@ -13,4 +13,4 @@ class Wall:
         '''
         Draws a wall piece.
         '''
-        draw.circle(simulation_screen, (255,255,255), (self.x, self.y), self.size)
+        draw.circle(simulation_screen, (150,75,0), (self.x, self.y), self.size)

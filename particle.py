@@ -5,7 +5,7 @@ from pygame import draw
 class Particle:
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, mutate=None):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, nutrition=None, reproduced=None, mutate=None):
         '''
         Initializes a new object of the particle class.
         '''
@@ -49,6 +49,16 @@ class Particle:
             self.color = choice([0,1,2,3,4,5])
         else:
             self.color = color
+        
+        if nutrition == None:
+            self.nutrition = 0
+        else:
+            self.nutrition = nutrition
+
+        if reproduced == None:
+            self.reproduced = 0
+        else:
+            self.reproduced = reproduced
 
     @staticmethod
     def new_matrix():
