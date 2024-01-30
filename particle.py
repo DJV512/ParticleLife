@@ -1,11 +1,10 @@
-from random import choice, random
-from numpy import ndarray
+from random import choice, random, uniform
 from pygame import draw
 
 class Particle:
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, nutrition=None, reproduced=None, mutate=None):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, reproduced=None, attractions=None, food_radar = 0, history=None, mutate=False):
         '''
         Initializes a new object of the particle class.
         '''
@@ -29,9 +28,6 @@ class Particle:
         else:
             self.y_vel = y_vel
 
-        # Parameter to keep track of how many "neighboring" particles a particle has
-        self.neighbors = 0
-
         # Initialize the particle's age as 0 loops, unless specififed from loaded file
         if age == None:
             self.age = 0
@@ -50,26 +46,40 @@ class Particle:
         else:
             self.color = color
         
-        if nutrition == None:
-            self.nutrition = 0
-        else:
-            self.nutrition = nutrition
+        # Initialize the variable to keep track of food intake.
+        self.nutrition = 0
 
+        # Initialize the variable to keep track of how many times the current particle has reproduced.
         if reproduced == None:
             self.reproduced = 0
         else:
             self.reproduced = reproduced
 
-    @staticmethod
-    def new_matrix():
-        '''
-        Generates a matrix of random attraction and repulsion for each pair of colors between -1 and 1.
-        '''
-        attract_matrix = ndarray(shape=(6, 6), dtype=float)
-        for i in range(6):
-            for j in range(6):
-                attract_matrix[i][j] = random() * 2 - 1 
-        return attract_matrix 
+        # Initialize the new particle's attractions and repulsions to all other colors
+        if attractions == None:
+            self.attractions = [(random() * 2 - 1) for _ in range(6)]
+        else:
+            self.attractions = attractions
+
+        # Initialize the new particle's attraction or repulsion from food pieces
+        self.food_radar = food_radar
+        
+        # Initialize a list called "history to keep track of the parameters of a particle over the course of evolution"
+        if history == None:
+            self.history=[]
+        else:
+            self.history=history
+        
+        # If this is a particle being created due to a reproduction event, randomly mutate one of it's self parameters
+        if mutate:
+            param_to_change = choice([0,1,2,3,4,5,6,7])
+            if 0 <= param_to_change <= 5:
+                self.attractions[param_to_change] += uniform(-0.03, 0.03)
+            elif param_to_change == 6:
+                self.food_radar += uniform(-0.03, 0.03)
+            elif param_to_change == 7:
+                self.size += choice([-1,1])
+
 
     def intra_particle_dist(self, other):
         '''
@@ -80,6 +90,15 @@ class Particle:
         r_centers = (rx**2 + ry**2)**(1/2)
         r_surfaces = r_centers - self.size - other.size
         return rx, ry, r_centers, r_surfaces
+
+    def particle_to_food_dist(self, food):
+        '''
+        Determines the euclidian distance between the center of a particle and a food piece.
+        '''
+        rx = self.x-food.x
+        ry = self.y-food.y
+        r_centers = (rx**2 + ry**2)**(1/2)
+        return rx, ry, r_centers
 
     @staticmethod
     def force(attraction, scaled_dist, beta):
