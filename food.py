@@ -1,4 +1,4 @@
-from random import random
+from random import random, choice
 from pygame import draw
 
 class Food:
@@ -18,7 +18,7 @@ class Food:
         
         # Initialize the size. Random at the start of the sim, or equal to dead particle otherwise
         if size == None:
-            self.size = 2
+            self.size = choice([1,2,3])
         else:
             self.size = size
 

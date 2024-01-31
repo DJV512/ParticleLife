@@ -39,6 +39,7 @@ def main():
     particle_num_y = 120
     dropdown_y = 200
     slider_y = 260
+    ident_part_y = 500
     footer_y = 950
 
     # Controls frame rate
@@ -49,7 +50,7 @@ def main():
     evolution = True
 
     # Life expectancy of a particle, related to food intake
-    life_expect_loops = 750
+    life_expect_loops = 1000
 
     # Counters for the total number of loops and total time
     total_num_loops = 0
@@ -78,8 +79,8 @@ def main():
 
     # Food settings
     num_food_pieces = 250
-    nutrition_to_survive = 4
-    nutrition_to_reproduce = 8
+    nutrition_to_survive = 3
+    nutrition_to_reproduce = 5
     add_food_num_loops = 5
 
     # Default values
@@ -99,7 +100,7 @@ def main():
     LOAD = False
 
     # Mouse parameters
-    mouse_mode = "grab"
+    mouse_mode = "ident"
     mouse_radius = 10
     grab = False
     add_particles = False
@@ -111,6 +112,9 @@ def main():
 
     # Make num_particles number of randomly positioned and colored parrticles
     particles = [pt() for _ in range(num_particles)]
+
+    # Temporarily use the first created particle as the "selected" particle until the user selects their own
+    selected_particle = particles[0]
 
     # Randomize initial food positions
     food_pieces = [Food() for _ in range(num_food_pieces)]
@@ -182,7 +186,7 @@ def main():
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((25, dropdown_y), (100,30)),
                                                  text="Mouse Mode", manager=manager)
     mouse_mode_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((125, dropdown_y), (200,30)),
-                                                         options_list=["Grab Particles", "Add Particles", "Remove Particles", "Ident Particles", "Add Wall", "Remove Wall"], starting_option="Grab Particles",
+                                                         options_list=["Ident Particles", "Grab Particles", "Add Particles", "Remove Particles", "Add Wall", "Remove Wall"], starting_option="Ident Particles",
                                                          manager=manager)
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((355, dropdown_y), (100,30)),
                                                  text="Mouse Size", manager=manager)
@@ -245,6 +249,80 @@ def main():
     loops_text = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((270, footer_y+20), (60, 20)),
                                              text=f"{total_num_loops}", manager=manager)
     
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0,ident_part_y), (540, 20)),
+                                            text=f"Parameters of the selected particle", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+30), (90, 20)),
+                                text="x-position:", manager=manager)
+    ident_particle_x = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+30), (50,20)),
+                                                   text=f"{selected_particle.x:.2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+60), (90, 20)),
+                                text="y-position:", manager=manager)
+    ident_particle_y = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+60), (50,20)),
+                                                   text=f"{selected_particle.y:.2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+90), (90, 20)),
+                                text="age:", manager=manager)
+    ident_particle_age = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+90), (50,20)),
+                                                   text=f"{selected_particle.age}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+120), (90, 20)),
+                                text="color:", manager=manager)
+    ident_particle_color = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+120), (50,20)),
+                                                   text=f"{selected_particle.color}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+150), (90, 20)),
+                                text="size:", manager=manager)
+    ident_particle_size = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+150), (50,20)),
+                                                   text=f"{selected_particle.size}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+180), (90, 20)),
+                                text="nutrition:", manager=manager)
+    ident_particle_nutrition = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+180), (50,20)),
+                                                   text=f"{selected_particle.nutrition}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+210), (90, 20)),
+                                text="reproduced:", manager=manager)
+    ident_particle_reproduced = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+210), (50,20)),
+                                                   text=f"{selected_particle.reproduced}", manager=manager)
+    
+
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+30), (90, 20)),
+                                text="food radar:", manager=manager)
+    ident_particle_food_radar = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+30), (50,20)),
+                                                   text=f"{selected_particle.food_radar:.2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+60), (90, 20)),
+                                text="red:", manager=manager)
+    ident_particle_attraction0 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+60), (50,20)),
+                                                   text=f"{selected_particle.attractions[0]:.2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+90), (90, 20)),
+                                text="green:", manager=manager)
+    ident_particle_attraction1 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+90), (50,20)),
+                                                   text=f"{selected_particle.attractions[1]:.2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+120), (90, 20)),
+                                text="blue:", manager=manager)
+    ident_particle_attraction2 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+120), (50,20)),
+                                                   text=f"{selected_particle.attractions[2]:.2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+150), (90, 20)),
+                                text="purple:", manager=manager)
+    ident_particle_attraction3 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+150), (50,20)),
+                                                   text=f"{selected_particle.attractions[3]:.2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+180), (90, 20)),
+                                text="yellow:", manager=manager)
+    ident_particle_attraction4 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+180), (50,20)),
+                                                   text=f"{selected_particle.attractions[4]:.2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+210), (90, 20)),
+                                text="cyan:", manager=manager)
+    ident_particle_attraction5 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+210), (50,20)),
+                                                   text=f"{selected_particle.attractions[5]:2f}", manager=manager)
+
 
     # Start the game loop
     running = True
@@ -291,14 +369,14 @@ def main():
                 
                 # Handles changes in mouse mode
                 elif event.ui_element == mouse_mode_menu:
-                    if event.text == "Grab Particles":
+                    if event.text == "Ident Particle":
+                        mouse_mode = "ident"
+                    elif event.text == "Grab Particles":
                         mouse_mode = "grab"
                     elif event.text == "Add Particles":
                         mouse_mode = "add"
                     elif event.text == "Remove Particles":
                         mouse_mode = "remove"
-                    elif event.text == "Ident Particle":
-                        mouse_mode = "ident"
                     elif event.text == "Add Wall":
                         mouse_mode = "wall"
                     elif event.text == "Remove Wall":
@@ -319,106 +397,107 @@ def main():
             
             #Handle mouse clicks
             elif event.type == pygame.MOUSEBUTTONDOWN:
-
-                # When grab is selected, mouse clicking grabs all particles in mouse radius
-                if mouse_mode == "grab" and not grab and not paused:
-                    paused = True
-                    grab = True
-                    m_x, m_y = pygame.mouse.get_pos()
-                    m_x -= panel_size_x
-                    grabbed = []
-                    for particle in particles:
-                        r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
-                        if r < mouse_radius:
-                            grabbed.append(particle)
-                    m_x_current = m_x
-                    m_y_current = m_y
-
-                # When add is selected, mouse clicking makes a new random particle
-                elif mouse_mode == "add":
-                    add_particles = True
-                    m_x, m_y = pygame.mouse.get_pos()
-                    particles.append(pt(x=m_x-panel_size_x, y=m_y))
-                    num_particles += 1
                 
-                # When remove is selected, mouse clicking removes all particles in the mouse radius
-                elif mouse_mode == "remove":
-                    remove_particles = True
-                    m_x, m_y = pygame.mouse.get_pos()
-                    m_x -= panel_size_x
-                    for particle in particles.copy():
-                        r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
-                        if r < mouse_radius:
-                            particles.remove(particle)
-                            num_particles -= 1
-
-                # When wall is selected, mouse clicking will draw wall
-                elif mouse_mode == "wall":
-                    draw_wall = True
-                    m_x, m_y = pygame.mouse.get_pos()
-                    m_x -= panel_size_x
-                    walls.append(Wall(m_x, m_y, mouse_radius))
-                    num_walls += 1
+                # Get current mouse position, and only perform action if the mouse is within the simulation screen
+                m_x, m_y = pygame.mouse.get_pos()
+                m_x -= panel_size_x
+                if m_x > 0:
                 
-                # When remove wall is selected, mouse clicking will remove wall
-                elif mouse_mode == "remove_wall":
-                    remove_wall = True
-                    m_x, m_y = pygame.mouse.get_pos()
-                    m_x -= panel_size_x
-                    for wall in walls.copy():
-                        r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
-                        if r < mouse_radius:
-                            walls.remove(wall)
-                            num_walls -= 1
+                    # When grab is selected, mouse clicking grabs all particles in mouse radius
+                    if mouse_mode == "grab" and not grab and not paused:
+                        paused = True
+                        grab = True
+                        grabbed = []
+                        for particle in particles:
+                            r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
+                            if r < mouse_radius:
+                                grabbed.append(particle)
+                        m_x_current = m_x
+                        m_y_current = m_y
+
+                    # When add is selected, mouse clicking makes a new random particle
+                    elif mouse_mode == "add":
+                        add_particles = True
+                        particles.append(pt(x=m_x, y=m_y))
+                        num_particles += 1
+                    
+                    # When remove is selected, mouse clicking removes all particles in the mouse radius
+                    elif mouse_mode == "remove":
+                        remove_particles = True
+                        for particle in particles.copy():
+                            r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
+                            if r < mouse_radius:
+                                particles.remove(particle)
+                                num_particles -= 1
+                    
+                    # When ident is selected, mouse clicking shows the parameters of the selected particle
+                    elif mouse_mode == "ident":
+                        min_distance = 1000
+                        for particle in particles:
+                            r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
+                            if r < min_distance:
+                                min_distance = r
+                                selected_particle = particle
+
+                    # When wall is selected, mouse clicking will draw wall
+                    elif mouse_mode == "wall":
+                        draw_wall = True
+                        walls.append(Wall(m_x, m_y, mouse_radius))
+                        num_walls += 1
+                    
+                    # When remove wall is selected, mouse clicking will remove wall
+                    elif mouse_mode == "remove_wall":
+                        remove_wall = True
+                        for wall in walls.copy():
+                            r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
+                            if r < mouse_radius:
+                                walls.remove(wall)
+                                num_walls -= 1
 
                     
             # Handle mouse motion 
             elif event.type == pygame.MOUSEMOTION:
 
-                # Mouse dragging moves all particles in mouse radius
-                if grab:
-                    m_x, m_y = pygame.mouse.get_pos()
-                    m_x -= panel_size_x
-                    change_x = m_x - m_x_current
-                    change_y = m_y - m_y_current
-                    for particle in grabbed:
-                        particle.x += change_x
-                        particle.y += change_y
-                    m_x_current = m_x
-                    m_y_current = m_y
+                # Get current mouse position, and only perform action if the mouse is within the simulation screen
+                m_x, m_y = pygame.mouse.get_pos()
+                m_x -= panel_size_x
+                if m_x > 0:
 
-                # Mouse dragging continues removing particles
-                elif remove_particles:
-                    m_x, m_y = pygame.mouse.get_pos()
-                    m_x -= panel_size_x
-                    for particle in particles.copy():
-                        r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
-                        if r < mouse_radius:
-                            particles.remove(particle)
-                            num_particles -= 1
+                    # Mouse dragging moves all particles in mouse radius
+                    if grab:
+                        change_x = m_x - m_x_current
+                        change_y = m_y - m_y_current
+                        for particle in grabbed:
+                            particle.x += change_x
+                            particle.y += change_y
+                        m_x_current = m_x
+                        m_y_current = m_y
 
-                # Mouse dragging continues to add new particles
-                elif add_particles:
-                    m_x, m_y = pygame.mouse.get_pos()
-                    particles.append(pt(x=m_x-panel_size_x, y=m_y))
-                    num_particles += 1
-                
-                # Mouse dragging draws more wall pieces
-                elif draw_wall:
-                    m_x, m_y = pygame.mouse.get_pos()
-                    m_x -= panel_size_x
-                    walls.append(Wall(m_x, m_y, mouse_radius))
-                    num_walls += 1
+                    # Mouse dragging continues removing particles
+                    elif remove_particles:
+                        for particle in particles.copy():
+                            r = ((particle.x-m_x)**2 + (particle.y-m_y)**2)**(1/2)
+                            if r < mouse_radius:
+                                particles.remove(particle)
+                                num_particles -= 1
 
-                # Mouse dragging removes more wall pieces
-                elif remove_wall:
-                    m_x, m_y = pygame.mouse.get_pos()
-                    m_x -= panel_size_x
-                    for wall in walls.copy():
-                        r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
-                        if r < mouse_radius:
-                            walls.remove(wall)
-                            num_walls -= 1
+                    # Mouse dragging continues to add new particles
+                    elif add_particles:
+                        particles.append(pt(x=m_x, y=m_y))
+                        num_particles += 1
+                    
+                    # Mouse dragging draws more wall pieces
+                    elif draw_wall:
+                        walls.append(Wall(m_x, m_y, mouse_radius))
+                        num_walls += 1
+
+                    # Mouse dragging removes more wall pieces
+                    elif remove_wall:
+                        for wall in walls.copy():
+                            r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
+                            if r < mouse_radius:
+                                walls.remove(wall)
+                                num_walls -= 1
 
             # Handle releasing mouse button
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -746,7 +825,7 @@ def main():
             
             # Controls evolution if evolution is set to true
             if evolution:
-                for particle in particles:
+                for particle in particles.copy():
 
                     # Particles that haven't found enough food will die
                     age_multiple = particle.age/life_expect_loops
@@ -755,6 +834,9 @@ def main():
                         num_food_pieces += 1
                         particles.remove(particle)
                         num_particles -= 1
+                        if particle == selected_particle:
+                            if len(particles)>0:
+                                selected_particle = particles[-1]
                         
                     # Particles with enough food reproduce
                     if particle.nutrition - particle.reproduced * nutrition_to_reproduce >= nutrition_to_reproduce:
@@ -772,6 +854,22 @@ def main():
         cyan_count_entry.set_text(f"{cyan_count}")
         total_count_entry.set_text(f"{num_particles}")
 
+        # Update the text of the parameters of the selected particle
+        ident_particle_x.set_text(f"{selected_particle.x:.2f}")
+        ident_particle_y.set_text(f"{selected_particle.y:.2f}")
+        ident_particle_age.set_text(f"{selected_particle.age}")
+        ident_particle_color.set_text(f"{selected_particle.color}")
+        ident_particle_size.set_text(f"{selected_particle.size}")
+        ident_particle_nutrition.set_text(f"{selected_particle.nutrition}")
+        ident_particle_reproduced.set_text(f"{selected_particle.reproduced}")
+        ident_particle_food_radar.set_text(f"{selected_particle.food_radar:.2f}")
+        ident_particle_attraction0.set_text(f"{selected_particle.attractions[0]:.2f}")
+        ident_particle_attraction1.set_text(f"{selected_particle.attractions[1]:.2f}")
+        ident_particle_attraction2.set_text(f"{selected_particle.attractions[2]:.2f}")
+        ident_particle_attraction3.set_text(f"{selected_particle.attractions[3]:.2f}")
+        ident_particle_attraction4.set_text(f"{selected_particle.attractions[4]:.2f}")
+        ident_particle_attraction5.set_text(f"{selected_particle.attractions[5]:.2f}")
+
         # Updates the text for the total number of loops in the lifetime of the current sim
         loops_text.set_text(f"{total_num_loops}")
 
@@ -784,6 +882,9 @@ def main():
         # Get mouse position and draw a circle around it
         m_x, m_y = pygame.mouse.get_pos()
         pygame.draw.circle(simulation_screen, WHITE, (m_x-panel_size_x, m_y), mouse_radius, 1)
+
+        #Draw a circle around the selected particle
+        pygame.draw.circle(simulation_screen, WHITE, (selected_particle.x, selected_particle.y), selected_particle.size + 4, 1)
 
         #Draw the walls, if any have been added
         if num_walls > 0:
