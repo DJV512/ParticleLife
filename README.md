@@ -3,16 +3,18 @@
 
 ### My own implementation of Particle Life, in Python, inspired by many others.
 
-This project was initially implemented in one file (main.py, now located within Original). I then challenged myself to 
+This project was initially implemented in one file (main.py, now located within Original/). I then challenged myself to 
 refactor the code to make particles into a class, which has successfully been completed. I've since implemented many 
-other goals, including saving and loading simulations, particles of different sizes, and a very primitive "evolution"
-system. The evolution system at this point kills off particles after a certain age, and allows a percentage of particles
-with "many neighbors" to reproduce an identical particle. The plan eventually is for every particle to have it's own
-attraction matrix, rather than just one that governs all particles, and that thosee values, along with size and color, will be mutatable when particles reproduce. I still need to figure out what makes a particle "fit" enough to reproduce. I don't
-love the "many neighbors" test. I may end up adding some kind of "food."
+other goals, including saving and loading simulations, particles of different sizes, "food" pieces that the particles
+must "eat" in order to survive and/or reproduce, the ability to add, remove, move, or identify individual particles, 
+the ability to add or remove walls (although it doesn't actually act as a barrier yet!), and changed the attraction matrix
+from one matrix that all particles share to each particle having their own attractions and repulsions to every other color.
+These changes allowed me to implement "evolution" in the sense that when a particle has eaten enough food to reproduce, their
+"genes," which include size, color, attraction matrix, and whether they are attracted to food, are passed on to the
+new particle, and with each new generation, one gene is randomly chosen for a slight mutation.
 
-Finally, I'm trying to learn the new language Mojo, and I want to re-implement the entire project in Mojo to see if 
-I can get it to run faster (and therefore have more particles on screen at once).
+As a longer term goal, I'm trying to learn the new language Mojo, and I want to re-implement the entire project in Mojo to see if 
+I can get it to run faster (and therefore have more particles on screen at once without devastating hits to the frame rate).
 
 This project is still a work in progress, and will change frequently. Please feel free to reach out with questions or
 suggestions!
