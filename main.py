@@ -727,8 +727,14 @@ def main():
             yellow_count = 0
             cyan_count = 0
 
-            # Add a new random piece of food every 10 loops
-            if total_num_loops % add_food_num_loops == 0:
+            # Add a new random piece of food every x loops
+            if total_num_loops < 5000 and total_num_loops % (add_food_num_loops/2) == 0:
+                food_pieces.append(Food())
+                num_food_pieces += 1
+            elif total_num_loops < 10000 and total_num_loops % add_food_num_loops == 0:
+                food_pieces.append(Food())
+                num_food_pieces += 1
+            elif total_num_loops % (add_food_num_loops * 2) == 0:
                 food_pieces.append(Food())
                 num_food_pieces += 1
 
@@ -844,6 +850,7 @@ def main():
                         particles.append(new_particle)
                         num_particles += 1
                         particle.reproduced += 1
+                        particle.nutrition -= nutrition_to_reproduce
 
         # Update particle color numbers
         red_count_entry.set_text(f"{red_count}")
