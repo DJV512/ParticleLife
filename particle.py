@@ -4,7 +4,7 @@ from pygame import draw
 class Particle:
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, reproduced=None, attractions=None, food_radar = 0, history=None, mutate=False):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, reproduced=None, attractions=None, rmax = 100, food_radar = 0, history=None, mutate=False):
         '''
         Initializes a new object of the particle class.
         '''
@@ -63,6 +63,9 @@ class Particle:
 
         # Initialize the new particle's attraction or repulsion from food pieces
         self.food_radar = food_radar
+
+        # Initialize the new particle's distance that it can "see" other particles and food
+        self.rmax = rmax
         
         # Initialize a list called "history to keep track of the parameters of a particle over the course of evolution"
         if history == None:
@@ -75,8 +78,10 @@ class Particle:
             param_to_change = randint(0,10)
             if 0 <= param_to_change <= 5:
                 self.attractions[param_to_change] += uniform(-0.05, 0.05)
-            elif 6 <= param_to_change <= 9:
-                self.food_radar += uniform(-0.1, 0.01)
+            elif 6 <= param_to_change <= 8:
+                self.food_radar += uniform(-0.1, 0.1)
+            elif param_to_change == 9:
+                self.rmax += uniform(-25, 25)
             elif param_to_change == 10:
                 self.size += choice([-1,1])
 

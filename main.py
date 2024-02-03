@@ -60,7 +60,6 @@ def main():
     total_time = 0
 
     # Set default values for changeable parameters
-    default_rmax = screen_size_y / 10
     default_friction_half_life = 0.1
     default_beta = 0.1
     default_force_factor = 5
@@ -78,13 +77,12 @@ def main():
     cyan_count = 0
 
     # Food settings
-    num_food_pieces = 250
+    num_food_pieces = 500
     nutrition_to_survive = 3
     nutrition_to_reproduce = 5
-    add_food_num_loops = 12
+    add_food_num_loops = 9
 
     # Default values
-    rmax = default_rmax
     friction_half_life = default_friction_half_life
     beta = default_beta
     # Control the friction force
@@ -214,12 +212,6 @@ def main():
                                                           start_value=force_factor, value_range=(0, 50),
                                                           manager=manager)
     
-    text_rmax = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30, slider_y+150), (290, 20)),
-                                            text=f"rMax (dist of interaction): {default_rmax:.2f}",
-                                            manager=manager)
-    slider_rmax = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((35, slider_y+170), (300, 20)),
-                                                         start_value=rmax, value_range=(0, screen_size_y) ,
-                                                         manager=manager)
     
     reset_sliders_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+40), (140, 30)),
                                             text='Reset Sliders', manager=manager)
@@ -287,6 +279,11 @@ def main():
     ident_particle_reproduced = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+210), (50,20)),
                                                    text=f"{selected_particle.reproduced}", manager=manager)
     
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+240), (90, 20)),
+                                text="rmax:", manager=manager)
+    ident_particle_rmax = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+240), (50,20)),
+                                                   text=f"{selected_particle.rmax}", manager=manager)
+    
 
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+30), (90, 20)),
                                 text="food radar:", manager=manager)
@@ -353,9 +350,6 @@ def main():
                 elif event.ui_element == slider_force:
                     force_factor = float(event.value)
                     text_force.set_text(f"Force (scalar multiple): {force_factor:.2f}")
-                elif event.ui_element == slider_rmax:
-                    rmax = float(event.value)
-                    text_rmax.set_text(f"rMax (distance of interaction): {rmax:.2f}")
 
             # Handle drop down selections
             elif event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
@@ -540,10 +534,6 @@ def main():
                     force_factor = default_force_factor
                     slider_force.set_current_value(force_factor)
                     text_force.set_text(f"Force (scalar multiple): {force_factor:.2f}")
-
-                    rmax = default_rmax
-                    slider_rmax.set_current_value(rmax)
-                    text_rmax.set_text(f"rMax (distance of interaction): {rmax:.2f}")
                 
                 elif event.ui_element == new_particles_button:
                     red_count = 0
@@ -573,7 +563,6 @@ def main():
                             "rate": rate,
                             "evolution": evolution,
                             "life_expect_loops": life_expect_loops,
-                            "rmax": rmax,
                             "friction_half_life": friction_half_life,
                             "beta": beta,
                             "force_factor": force_factor,
@@ -585,7 +574,7 @@ def main():
                             "num_food_pieces": num_food_pieces
                         },
 
-                        "particle_data": [(part.x, part.y, part.x_vel, part.y_vel, part.age, part.color, part.size, part.nutrition, part.attractions, part.reproduced, part.food_radar, part.history) for part in particles],
+                        "particle_data": [(part.x, part.y, part.x_vel, part.y_vel, part.age, part.color, part.size, part.nutrition, part.attractions, part.reproduced, part.rmax, part.food_radar, part.history) for part in particles],
 
                         "wall_data": [(wall.x, wall.y) for wall in walls],
 
@@ -635,8 +624,7 @@ def main():
                     particle_repel_force = data["parameters"]["particle_repel_force"]
                     rate = data["parameters"]["rate"]
                     evolution = data["parameters"]["evolution"]
-                    life_expect_loops = data["parameters"]["life_expect_loops"]
-                    rmax = data["parameters"]["rmax"]
+                    life_expect_loops = data["parameters"]["life_expect_loops"]        
                     friction_half_life = data["parameters"]["friction_half_life"]
                     beta = data["parameters"]["beta"]
                     force_factor = data["parameters"]["force_factor"]
@@ -654,8 +642,6 @@ def main():
                     text_friction.set_text(f"Friction (slow down over time): {friction_half_life:.2f}")
                     slider_force.set_current_value(force_factor)
                     text_force.set_text(f"Force (scalar multiple): {force_factor:.2f}")
-                    slider_rmax.set_current_value(rmax)
-                    text_rmax.set_text(f"rMax (distance of interaction): {rmax:.2f}")
 
                     total_time_text.set_text(f"{ttotal_min}:{ttotal_sec:02d}")
                     loops_text.set_text(f"{total_num_loops}")
@@ -671,8 +657,9 @@ def main():
                                     nutrition=["particle_data"][i][7],
                                     attractions=["particle_data"][i][8],
                                     reproduced=["particle_data"][i][9],
-                                    food_radar=["particle_data"][i][10],
-                                    history=["particle_data"][i][11],
+                                    rmax=["particle_data"][i][10],
+                                    food_radar=["particle_data"][i][11],
+                                    history=["particle_data"][i][12],
                                     ) 
                                 for i in range(num_particles)]
                     
@@ -728,10 +715,10 @@ def main():
             cyan_count = 0
 
             # Add a new random piece of food every x loops
-            if total_num_loops < 5000 and total_num_loops % (add_food_num_loops/3) == 0:
+            if total_num_loops < 20000 and total_num_loops % (add_food_num_loops/3) == 0:
                 food_pieces.append(Food())
                 num_food_pieces += 1
-            elif total_num_loops < 10000 and total_num_loops % add_food_num_loops == 0:
+            elif total_num_loops < 40000 and total_num_loops % add_food_num_loops == 0:
                 food_pieces.append(Food())
                 num_food_pieces += 1
             elif total_num_loops % (add_food_num_loops * 3) == 0:
@@ -768,10 +755,10 @@ def main():
                         continue
                     else:
                         rx, ry, r_centers, r_surfaces = particle1.intra_particle_dist(particle2)
-                        if r_centers > rmax:
+                        if r_centers > particle1.rmax:
                             continue
-                        elif r_centers <= rmax and r_surfaces > 0:
-                            f = pt.force(particle1.attractions[particle2.color], r_centers/rmax, beta) * particle2.size
+                        elif r_centers <= particle1.rmax and r_surfaces > 0:
+                            f = pt.force(particle1.attractions[particle2.color], r_centers/particle1.rmax, beta) * particle2.size
                             theta = atan2(ry, rx)
                             accel_x += cos(theta) * f
                             accel_y += sin(theta) * f
@@ -784,10 +771,10 @@ def main():
                 if particle1.food_radar != 0:
                     for food in food_pieces:
                         rx, ry, r_centers = particle1.particle_to_food_dist(food)
-                        if r_centers > rmax:
+                        if r_centers > particle1.rmax:
                             continue
-                        elif r_centers <= rmax:
-                            f =  (1 - r_centers/rmax) * food.size * particle1.food_radar
+                        elif r_centers <= particle1.rmax:
+                            f =  (1 - r_centers/particle1.rmax) * food.size * particle1.food_radar
                             theta = atan2(ry, rx)
                             accel_x += cos(theta) * f
                             accel_y += sin(theta) * f
@@ -796,8 +783,8 @@ def main():
                 particle1.age += 1
 
                 # Scaling factor for the strength of the attraction or repulsion force
-                accel_x *= rmax * force_factor
-                accel_y *= rmax * force_factor
+                accel_x *= particle1.rmax * force_factor
+                accel_y *= particle1.rmax * force_factor
                 
                 # Slow particle1 down to account for friction
                 particle1.x_vel *= friction_factor
@@ -847,7 +834,7 @@ def main():
                         
                     # Particles with enough food reproduce
                     if particle.nutrition - particle.reproduced * nutrition_to_reproduce >= nutrition_to_reproduce:
-                        new_particle = pt(x=particle.x+2*particle.size, y=particle.y+2*particle.size, color=particle.color, size=particle.size, attractions=particle.attractions, food_radar=particle.food_radar, history=particle.history.append([particle.attractions, particle.size, particle.food_radar]), mutate=True)
+                        new_particle = pt(x=particle.x+2*particle.size, y=particle.y+2*particle.size, color=particle.color, size=particle.size, attractions=particle.attractions, rmax = particle.rmax, food_radar=particle.food_radar, history=particle.history.append([particle.attractions, particle.size, particle.food_radar]), mutate=True)
                         particles.append(new_particle)
                         num_particles += 1
                         particle.reproduced += 1
@@ -870,6 +857,7 @@ def main():
         ident_particle_size.set_text(f"{selected_particle.size}")
         ident_particle_nutrition.set_text(f"{selected_particle.nutrition}")
         ident_particle_reproduced.set_text(f"{selected_particle.reproduced}")
+        ident_particle_rmax.set_text(f"{selected_particle.rmax}")
         ident_particle_food_radar.set_text(f"{selected_particle.food_radar:.2f}")
         ident_particle_attraction0.set_text(f"{selected_particle.attractions[0]:.2f}")
         ident_particle_attraction1.set_text(f"{selected_particle.attractions[1]:.2f}")
