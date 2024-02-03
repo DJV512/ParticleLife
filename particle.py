@@ -1,4 +1,4 @@
-from random import choice, random, uniform
+from random import choice, random, randint, uniform
 from pygame import draw
 
 class Particle:
@@ -72,12 +72,12 @@ class Particle:
         
         # If this is a particle being created due to a reproduction event, randomly mutate one of it's self parameters
         if mutate:
-            param_to_change = choice([0,1,2,3,4,5,6,7])
+            param_to_change = randint(0,10)
             if 0 <= param_to_change <= 5:
-                self.attractions[param_to_change] += uniform(-0.03, 0.03)
-            elif param_to_change == 6:
-                self.food_radar += uniform(-0.03, 0.03)
-            elif param_to_change == 7:
+                self.attractions[param_to_change] += uniform(-0.05, 0.05)
+            elif 6 <= param_to_change <= 9:
+                self.food_radar += uniform(-0.1, 0.01)
+            elif param_to_change == 10:
                 self.size += choice([-1,1])
 
 

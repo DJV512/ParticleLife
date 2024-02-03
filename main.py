@@ -81,7 +81,7 @@ def main():
     num_food_pieces = 250
     nutrition_to_survive = 3
     nutrition_to_reproduce = 5
-    add_food_num_loops = 5
+    add_food_num_loops = 12
 
     # Default values
     rmax = default_rmax
@@ -728,13 +728,13 @@ def main():
             cyan_count = 0
 
             # Add a new random piece of food every x loops
-            if total_num_loops < 5000 and total_num_loops % (add_food_num_loops/2) == 0:
+            if total_num_loops < 5000 and total_num_loops % (add_food_num_loops/3) == 0:
                 food_pieces.append(Food())
                 num_food_pieces += 1
             elif total_num_loops < 10000 and total_num_loops % add_food_num_loops == 0:
                 food_pieces.append(Food())
                 num_food_pieces += 1
-            elif total_num_loops % (add_food_num_loops * 2) == 0:
+            elif total_num_loops % (add_food_num_loops * 3) == 0:
                 food_pieces.append(Food())
                 num_food_pieces += 1
 
@@ -781,13 +781,13 @@ def main():
                             accel_y += sin(theta) * particle_repel_force
                 
                 # If particle1 is attracted or repulsed by food, then figure out how far it is to each food piece and calculate the effect on particle1's acceleration
-                if particle.food_radar != 0:
+                if particle1.food_radar != 0:
                     for food in food_pieces:
                         rx, ry, r_centers = particle1.particle_to_food_dist(food)
                         if r_centers > rmax:
                             continue
                         elif r_centers <= rmax:
-                            f =  (1 - r_centers/rmax) * food.size * particle.food_radar
+                            f =  (1 - r_centers/rmax) * food.size * particle1.food_radar
                             theta = atan2(ry, rx)
                             accel_x += cos(theta) * f
                             accel_y += sin(theta) * f
@@ -824,7 +824,8 @@ def main():
             # Check if any particles have found food
             for particle in particles:
                 for food in food_pieces.copy():
-                    if ((particle.x-food.x)**2 + (particle.y - food.y)**2)**(1/2) < (particle.size + food.size):
+                    _, _, r = particle.particle_to_food_dist(food)
+                    if r < (particle.size + food.size):
                         particle.nutrition += food.size
                         food_pieces.remove(food)
                         num_food_pieces -= 1
