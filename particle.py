@@ -4,7 +4,7 @@ from pygame import draw
 class Particle:
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, reproduced=None, attractions=None, rmax = 100, food_radar = 0, history=None, mutate=False):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, reproduced=None, attractions=None, rmax = None, food_radar = None, history=None, mutate=False):
         '''
         Initializes a new object of the particle class.
         '''
@@ -62,12 +62,18 @@ class Particle:
             self.attractions = attractions
 
         # Initialize the new particle's attraction or repulsion from food pieces
-        self.food_radar = food_radar
+        if food_radar == None:
+            self.food_radar = uniform(-0.2, 0.2)
+        else:
+            self.food_radar = food_radar
 
         # Initialize the new particle's distance that it can "see" other particles and food
-        self.rmax = rmax
+        if rmax == None:
+            self.rmax = uniform(75, 125)
+        else:
+            self.rmax = rmax
         
-        # Initialize a list called "history to keep track of the parameters of a particle over the course of evolution"
+        # Initialize a list called history to keep track of the historical parameters of a particle lineage
         if history == None:
             self.history=[]
         else:

@@ -213,11 +213,11 @@ def main():
                                                           manager=manager)
     
     
-    reset_sliders_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+40), (140, 30)),
+    reset_sliders_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+15), (140, 30)),
                                             text='Reset Sliders', manager=manager)
-    new_particles_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+90), (140, 30)),
+    new_particles_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+65), (140, 30)),
                                             text='New Particles', manager=manager)
-    new_forces_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+140), (140, 30)),
+    new_forces_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+115), (140, 30)),
                                             text='New Forces', manager=manager)
 
 
@@ -282,7 +282,7 @@ def main():
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+240), (90, 20)),
                                 text="rmax:", manager=manager)
     ident_particle_rmax = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+240), (50,20)),
-                                                   text=f"{selected_particle.rmax}", manager=manager)
+                                                   text=f"{selected_particle.rmax:.2f}", manager=manager)
     
 
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+30), (90, 20)),
@@ -319,6 +319,11 @@ def main():
                                 text="cyan:", manager=manager)
     ident_particle_attraction5 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+210), (50,20)),
                                                    text=f"{selected_particle.attractions[5]:2f}", manager=manager)
+    
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+240), (90, 20)),
+                                text="generation:", manager=manager)
+    ident_particle_history = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+240), (50,20)),
+                                                   text=f"{len(selected_particle.history)}", manager=manager)
 
 
     # Start the game loop
@@ -834,8 +839,19 @@ def main():
                         
                     # Particles with enough food reproduce
                     if particle.nutrition - particle.reproduced * nutrition_to_reproduce >= nutrition_to_reproduce:
-                        new_particle = pt(x=particle.x+2*particle.size, y=particle.y+2*particle.size, color=particle.color, size=particle.size, attractions=particle.attractions, rmax = particle.rmax, food_radar=particle.food_radar, history=particle.history.append([particle.attractions, particle.size, particle.food_radar]), mutate=True)
-                        particles.append(new_particle)
+                        particles.append(pt(x=particle.x+2*particle.size,
+                                            y=particle.y+2*particle.size,
+                                            color=particle.color,
+                                            size=particle.size,
+                                            attractions=particle.attractions,
+                                            rmax = particle.rmax,
+                                            food_radar=particle.food_radar,
+                                            history=particle.history + [[particle.attractions,
+                                                                             particle.size,
+                                                                             particle.rmax,
+                                                                             particle.food_radar]],
+                                            mutate=True)
+                                        )
                         num_particles += 1
                         particle.reproduced += 1
                         particle.nutrition -= nutrition_to_reproduce
@@ -857,7 +873,7 @@ def main():
         ident_particle_size.set_text(f"{selected_particle.size}")
         ident_particle_nutrition.set_text(f"{selected_particle.nutrition}")
         ident_particle_reproduced.set_text(f"{selected_particle.reproduced}")
-        ident_particle_rmax.set_text(f"{selected_particle.rmax}")
+        ident_particle_rmax.set_text(f"{selected_particle.rmax:.2f}")
         ident_particle_food_radar.set_text(f"{selected_particle.food_radar:.2f}")
         ident_particle_attraction0.set_text(f"{selected_particle.attractions[0]:.2f}")
         ident_particle_attraction1.set_text(f"{selected_particle.attractions[1]:.2f}")
@@ -865,6 +881,7 @@ def main():
         ident_particle_attraction3.set_text(f"{selected_particle.attractions[3]:.2f}")
         ident_particle_attraction4.set_text(f"{selected_particle.attractions[4]:.2f}")
         ident_particle_attraction5.set_text(f"{selected_particle.attractions[5]:.2f}")
+        ident_particle_history.set_text(f"{len(selected_particle.history)}")
 
         # Updates the text for the total number of loops in the lifetime of the current sim
         loops_text.set_text(f"{total_num_loops}")

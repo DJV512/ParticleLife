@@ -18,7 +18,7 @@ class Food:
         
         # Initialize the size. Random at the start of the sim, or equal to dead particle otherwise
         if size == None:
-            self.size = choice([1,2,3])
+            self.size = choice([1,2,3,4])
         else:
             self.size = size
 
