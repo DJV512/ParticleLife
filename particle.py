@@ -4,7 +4,7 @@ from pygame import draw
 class Particle:
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, size=None, reproduced=None, attractions=None, rmax = None, food_radar = None, history=None, mutate=False):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, nutrition=0, size=None, reproduced=None, attractions=None, rmax = None, food_radar = None, history=None, mutate=False):
         '''
         Initializes a new object of the particle class.
         '''
@@ -47,7 +47,7 @@ class Particle:
             self.color = color
         
         # Initialize the variable to keep track of food intake.
-        self.nutrition = 0
+        self.nutrition = nutrition
 
         # Initialize the variable to keep track of how many times the current particle has reproduced.
         if reproduced == None:
@@ -79,17 +79,21 @@ class Particle:
         else:
             self.history=history
         
-        # If this is a particle being created due to a reproduction event, randomly mutate one of it's self parameters
-        if mutate:
+        # If this is a particle being created due to a reproduction event, randomly mutate one of its mutable parameters
+        self.mutate = mutate
+        if self.mutate:
             param_to_change = randint(0,10)
             if 0 <= param_to_change <= 5:
-                self.attractions[param_to_change] += uniform(-0.05, 0.05)
-            elif 6 <= param_to_change <= 8:
+                self.attractions[param_to_change] += uniform(-0.1, 0.1)
+            elif 6 <= param_to_change <= 7:
                 self.food_radar += uniform(-0.1, 0.1)
-            elif param_to_change == 9:
+            elif 8 <= param_to_change == 9:
                 self.rmax += uniform(-25, 25)
             elif param_to_change == 10:
                 self.size += choice([-1,1])
+                if self.size < 1:
+                    self.size = 1
+            self.mutate = False
 
 
     def intra_particle_dist(self, other):

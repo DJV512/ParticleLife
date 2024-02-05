@@ -26,6 +26,15 @@ def main():
     BLACK = (0,0,0)
     WHITE = (255,255,255)
 
+    color_dict = {
+        0: "red",
+        1: "green",
+        2: "blue",
+        3: "purple",
+        4: "yellow",
+        5: "cyan",
+    }
+
     # Screen size parameters
     screen_size_x = 1540
     panel_size_x = 540
@@ -50,7 +59,7 @@ def main():
     evolution = True
 
     # Life expectancy of a particle, related to food intake
-    life_expect_loops = 1000
+    life_expect_loops = 2000
 
     # Counters for the total number of loops and total time
     total_num_loops = 0
@@ -65,7 +74,7 @@ def main():
     default_force_factor = 5
 
     # Starting number of particle defaults
-    default_num_particles = 300
+    default_num_particles = 50
     num_particles = default_num_particles
     oldest_particle = 0
     no_oldest_particle = 0
@@ -78,8 +87,7 @@ def main():
 
     # Food settings
     num_food_pieces = 500
-    nutrition_to_survive = 3
-    nutrition_to_reproduce = 5
+    nutrition_to_reproduce = 4
     add_food_num_loops = 9
 
     # Default values
@@ -279,11 +287,6 @@ def main():
     ident_particle_reproduced = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+210), (50,20)),
                                                    text=f"{selected_particle.reproduced}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+240), (90, 20)),
-                                text="rmax:", manager=manager)
-    ident_particle_rmax = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+240), (50,20)),
-                                                   text=f"{selected_particle.rmax:.2f}", manager=manager)
-    
 
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+30), (90, 20)),
                                 text="food radar:", manager=manager)
@@ -291,38 +294,43 @@ def main():
                                                    text=f"{selected_particle.food_radar:.2f}", manager=manager)
     
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+60), (90, 20)),
+                                text="rmax:", manager=manager)
+    ident_particle_rmax = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+60), (50,20)),
+                                                   text=f"{selected_particle.rmax:.2f}", manager=manager)
+
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+90), (90, 20)),
                                 text="red:", manager=manager)
-    ident_particle_attraction0 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+60), (50,20)),
+    ident_particle_attraction0 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+90), (50,20)),
                                                    text=f"{selected_particle.attractions[0]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+90), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+120), (90, 20)),
                                 text="green:", manager=manager)
-    ident_particle_attraction1 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+90), (50,20)),
+    ident_particle_attraction1 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+120), (50,20)),
                                                    text=f"{selected_particle.attractions[1]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+120), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+150), (90, 20)),
                                 text="blue:", manager=manager)
-    ident_particle_attraction2 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+120), (50,20)),
+    ident_particle_attraction2 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+150), (50,20)),
                                                    text=f"{selected_particle.attractions[2]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+150), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+180), (90, 20)),
                                 text="purple:", manager=manager)
-    ident_particle_attraction3 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+150), (50,20)),
+    ident_particle_attraction3 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+180), (50,20)),
                                                    text=f"{selected_particle.attractions[3]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+180), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+210), (90, 20)),
                                 text="yellow:", manager=manager)
-    ident_particle_attraction4 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+180), (50,20)),
+    ident_particle_attraction4 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+210), (50,20)),
                                                    text=f"{selected_particle.attractions[4]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+210), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+240), (90, 20)),
                                 text="cyan:", manager=manager)
-    ident_particle_attraction5 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+210), (50,20)),
+    ident_particle_attraction5 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+240), (50,20)),
                                                    text=f"{selected_particle.attractions[5]:2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+240), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+270), (90, 20)),
                                 text="generation:", manager=manager)
-    ident_particle_history = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+240), (50,20)),
+    ident_particle_history = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+270), (50,20)),
                                                    text=f"{len(selected_particle.history)}", manager=manager)
 
 
@@ -705,13 +713,13 @@ def main():
         for food in food_pieces:
             food.draw(simulation_screen)
 
-        # Where the magic happens
+        # Where the magic happens - Update particle velocities and positions
         if not paused:
 
             # Keep track of the total number of loops
             total_num_loops +=1
 
-            # Update particle velocities and positions
+            # Initialize the counters for the colors
             red_count = 0
             green_count = 0
             blue_count = 0
@@ -723,7 +731,7 @@ def main():
             if total_num_loops < 20000 and total_num_loops % (add_food_num_loops/3) == 0:
                 food_pieces.append(Food())
                 num_food_pieces += 1
-            elif total_num_loops < 40000 and total_num_loops % add_food_num_loops == 0:
+            elif total_num_loops < 40000 and total_num_loops % (add_food_num_loops) == 0:
                 food_pieces.append(Food())
                 num_food_pieces += 1
             elif total_num_loops % (add_food_num_loops * 3) == 0:
@@ -751,6 +759,8 @@ def main():
                         yellow_count += 1
                     case 5:
                         cyan_count += 1
+
+                # Initialize the particle's acceleration to 0        
                 accel_x = 0
                 accel_y = 0
 
@@ -825,20 +835,15 @@ def main():
             # Controls evolution if evolution is set to true
             if evolution:
                 for particle in particles.copy():
-
-                    # Particles that haven't found enough food will die
+                    
+                    necessary_nutrition = nutrition_to_reproduce + particle.size
+                    used_nutrition = necessary_nutrition * particle.reproduced
                     age_multiple = particle.age/life_expect_loops
-                    if age_multiple > 1 and particle.nutrition < age_multiple * nutrition_to_survive:
-                        food_pieces.append(Food(particle.x, particle.y, particle.size))
-                        num_food_pieces += 1
-                        particles.remove(particle)
-                        num_particles -= 1
-                        if particle == selected_particle:
-                            if len(particles)>0:
-                                selected_particle = particles[-1]
-                        
+
                     # Particles with enough food reproduce
-                    if particle.nutrition - particle.reproduced * nutrition_to_reproduce >= nutrition_to_reproduce:
+                    if particle.nutrition - used_nutrition >= necessary_nutrition:
+                        num_particles += 1
+                        particle.reproduced += 1
                         particles.append(pt(x=particle.x+2*particle.size,
                                             y=particle.y+2*particle.size,
                                             color=particle.color,
@@ -852,9 +857,16 @@ def main():
                                                                              particle.food_radar]],
                                             mutate=True)
                                         )
-                        num_particles += 1
-                        particle.reproduced += 1
-                        particle.nutrition -= nutrition_to_reproduce
+                    
+                    # Particles that haven't found enough food to reproduce will die
+                    if age_multiple > 1 and particle.reproduced < age_multiple:
+                        food_pieces.append(Food(particle.x, particle.y, particle.size))
+                        num_food_pieces += 1
+                        particles.remove(particle)
+                        num_particles -= 1
+                        if particle == selected_particle:
+                            if len(particles)>0:
+                                selected_particle = particles[-1]
 
         # Update particle color numbers
         red_count_entry.set_text(f"{red_count}")
@@ -869,12 +881,12 @@ def main():
         ident_particle_x.set_text(f"{selected_particle.x:.2f}")
         ident_particle_y.set_text(f"{selected_particle.y:.2f}")
         ident_particle_age.set_text(f"{selected_particle.age}")
-        ident_particle_color.set_text(f"{selected_particle.color}")
+        ident_particle_color.set_text(f"{color_dict[selected_particle.color]}")
         ident_particle_size.set_text(f"{selected_particle.size}")
         ident_particle_nutrition.set_text(f"{selected_particle.nutrition}")
         ident_particle_reproduced.set_text(f"{selected_particle.reproduced}")
-        ident_particle_rmax.set_text(f"{selected_particle.rmax:.2f}")
         ident_particle_food_radar.set_text(f"{selected_particle.food_radar:.2f}")
+        ident_particle_rmax.set_text(f"{selected_particle.rmax:.2f}")
         ident_particle_attraction0.set_text(f"{selected_particle.attractions[0]:.2f}")
         ident_particle_attraction1.set_text(f"{selected_particle.attractions[1]:.2f}")
         ident_particle_attraction2.set_text(f"{selected_particle.attractions[2]:.2f}")
@@ -918,12 +930,17 @@ def main():
         total_time_text.set_text(f"{ttotal_min}:{ttotal_sec:02d}")
 
         # Update the control panel, draw the control panel
-        # Paste the control panel and simulation surfaces onto the main screen
         manager.update(loop_length)        
         manager.draw_ui(panel)
+
+        # Paste the control panel and simulation surfaces onto the main screen
         screen.blit(panel, (0,0))
         screen.blit(simulation_screen, (panel_size_x,0))
+
+        # Actually display the new control panel
         pygame.display.flip()
+
+        # End of game loop
 
     pygame.quit()
 
