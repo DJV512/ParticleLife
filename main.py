@@ -287,6 +287,11 @@ def main():
     ident_particle_reproduced = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+210), (50,20)),
                                                    text=f"{selected_particle.reproduced}", manager=manager)
     
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+240), (90, 20)),
+                                text="ID:", manager=manager)
+    ident_particle_id = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, ident_part_y+240), (100,20)),
+                                                   text=f"{hex(id(selected_particle))}", manager=manager)
+    
 
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+30), (90, 20)),
                                 text="food radar:", manager=manager)
@@ -331,7 +336,7 @@ def main():
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+270), (90, 20)),
                                 text="generation:", manager=manager)
     ident_particle_history = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+270), (50,20)),
-                                                   text=f"{len(selected_particle.history)}", manager=manager)
+                                                   text=f"{len(selected_particle.history)+1}", manager=manager)
 
 
     # Start the game loop
@@ -715,6 +720,7 @@ def main():
 
         # Where the magic happens - Update particle velocities and positions
         if not paused:
+            print(selected_particle)
 
             # Keep track of the total number of loops
             total_num_loops +=1
@@ -842,21 +848,29 @@ def main():
 
                     # Particles with enough food reproduce
                     if particle.nutrition - used_nutrition >= necessary_nutrition:
+                        # print()
+                        # print(particle.history)
+                        # print("To Repo:", particle)
                         num_particles += 1
                         particle.reproduced += 1
-                        particles.append(pt(x=particle.x+2*particle.size,
-                                            y=particle.y+2*particle.size,
-                                            color=particle.color,
-                                            size=particle.size,
-                                            attractions=particle.attractions,
-                                            rmax = particle.rmax,
-                                            food_radar=particle.food_radar,
-                                            history=particle.history + [[particle.attractions,
-                                                                             particle.size,
-                                                                             particle.rmax,
-                                                                             particle.food_radar]],
-                                            mutate=True)
-                                        )
+                        new_particle = pt(x=particle.x+2*particle.size,
+                                          y=particle.y+2*particle.size,
+                                          color=particle.color,
+                                          size=particle.size,
+                                          attractions=particle.attractions,
+                                          rmax=particle.rmax,
+                                          food_radar=particle.food_radar,
+                                          history=particle.history.copy() + [[particle.attractions,
+                                                                              particle.size,
+                                                                              particle.rmax,
+                                                                              particle.food_radar]],
+                                          )
+                        # print(f"    New Part: {new_particle}")
+                        # print(new_particle.history)
+                        new_particle.mutate()
+                        # print(new_particle.history)
+                        # print(f"            Mut Part: {new_particle}")
+                        particles.append(new_particle)
                     
                     # Particles that haven't found enough food to reproduce will die
                     if age_multiple > 1 and particle.reproduced < age_multiple:
@@ -885,6 +899,7 @@ def main():
         ident_particle_size.set_text(f"{selected_particle.size}")
         ident_particle_nutrition.set_text(f"{selected_particle.nutrition}")
         ident_particle_reproduced.set_text(f"{selected_particle.reproduced}")
+        ident_particle_id.set_text(f"{hex(id(selected_particle))}")
         ident_particle_food_radar.set_text(f"{selected_particle.food_radar:.2f}")
         ident_particle_rmax.set_text(f"{selected_particle.rmax:.2f}")
         ident_particle_attraction0.set_text(f"{selected_particle.attractions[0]:.2f}")
@@ -893,7 +908,7 @@ def main():
         ident_particle_attraction3.set_text(f"{selected_particle.attractions[3]:.2f}")
         ident_particle_attraction4.set_text(f"{selected_particle.attractions[4]:.2f}")
         ident_particle_attraction5.set_text(f"{selected_particle.attractions[5]:.2f}")
-        ident_particle_history.set_text(f"{len(selected_particle.history)}")
+        ident_particle_history.set_text(f"{len(selected_particle.history)+1}")
 
         # Updates the text for the total number of loops in the lifetime of the current sim
         loops_text.set_text(f"{total_num_loops}")

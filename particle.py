@@ -4,7 +4,7 @@ from pygame import draw
 class Particle:
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, nutrition=0, size=None, reproduced=None, attractions=None, rmax = None, food_radar = None, history=None, mutate=False):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, nutrition=0, size=None, reproduced=None, attractions=None, rmax = None, food_radar = None, history=None):
         '''
         Initializes a new object of the particle class.
         '''
@@ -78,23 +78,11 @@ class Particle:
             self.history=[]
         else:
             self.history=history
-        
-        # If this is a particle being created due to a reproduction event, randomly mutate one of its mutable parameters
-        self.mutate = mutate
-        if self.mutate:
-            param_to_change = randint(0,10)
-            if 0 <= param_to_change <= 5:
-                self.attractions[param_to_change] += uniform(-0.1, 0.1)
-            elif 6 <= param_to_change <= 7:
-                self.food_radar += uniform(-0.1, 0.1)
-            elif 8 <= param_to_change == 9:
-                self.rmax += uniform(-25, 25)
-            elif param_to_change == 10:
-                self.size += choice([-1,1])
-                if self.size < 1:
-                    self.size = 1
-            self.mutate = False
 
+    
+    def __repr__(self):
+        # return f"Particle: {hex(id(self))}; Age: {self.age}; Nutrition: {self.nutrition}; Size: {self.size}; Radar: {self.food_radar}; RMax: {self.rmax}"
+        return f"Age: {self.age}; Nutrition: {self.nutrition}; Repro: {self.reproduced}\n    Attractions: {self.attractions}\n        History: {self.history}"
 
     def intra_particle_dist(self, other):
         '''
@@ -130,3 +118,25 @@ class Particle:
         Given a particle object, draws it on the simulation_screen surface.
         '''
         draw.circle(simulation_screen, Particle.COLORS[self.color], (self.x, self.y), self.size)
+
+
+    def mutate(self):
+        '''
+        If this is a particle being created due to a reproduction event, randomly mutate one of its mutable parameters
+        '''
+        param_to_change = randint(0,10)
+        if 0 <= param_to_change <= 5:
+            change = uniform(-0.1, 0.1)
+            self.attractions[param_to_change] += change
+        elif 6 <= param_to_change <= 7:
+            change = uniform(-0.1, 0.1)
+            self.food_radar += change
+        elif 8 <= param_to_change <= 9:
+            change = uniform(-25, 25)
+            self.rmax += change
+        elif param_to_change == 10:
+            change = choice([-1,1])
+            self.size += change
+            if self.size < 1:
+                self.size = 1
+        # print(f"         Param Changed: {param_to_change}; Change: {change}")
