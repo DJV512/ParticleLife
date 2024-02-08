@@ -1,3 +1,4 @@
+from copy import deepcopy
 from food import Food
 from json import dump, load
 from math import atan2, cos, sin
@@ -74,7 +75,7 @@ def main():
     default_force_factor = 5
 
     # Starting number of particle defaults
-    default_num_particles = 50
+    default_num_particles = 100
     num_particles = default_num_particles
     oldest_particle = 0
     no_oldest_particle = 0
@@ -192,8 +193,10 @@ def main():
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((25, dropdown_y), (100,30)),
                                                  text="Mouse Mode", manager=manager)
     mouse_mode_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((125, dropdown_y), (200,30)),
-                                                         options_list=["Ident Particles", "Grab Particles", "Add Particles", "Remove Particles", "Add Wall", "Remove Wall"], starting_option="Ident Particles",
+                                                         options_list=["Ident Particles", "Grab Particles", "Add Particles", "Remove Particles"], starting_option="Ident Particles",
                                                          manager=manager)
+    # Removed ", "Add Wall", "Remove Wall"" from the above menu until I can make it work right.
+
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((355, dropdown_y), (100,30)),
                                                  text="Mouse Size", manager=manager)
     mouse_radius_menu = pygame_gui.elements.UIDropDownMenu(relative_rect=pygame.Rect((455, dropdown_y), (50,30)),
@@ -720,7 +723,6 @@ def main():
 
         # Where the magic happens - Update particle velocities and positions
         if not paused:
-            print(selected_particle)
 
             # Keep track of the total number of loops
             total_num_loops +=1
@@ -848,28 +850,21 @@ def main():
 
                     # Particles with enough food reproduce
                     if particle.nutrition - used_nutrition >= necessary_nutrition:
-                        # print()
-                        # print(particle.history)
-                        # print("To Repo:", particle)
                         num_particles += 1
                         particle.reproduced += 1
-                        new_particle = pt(x=particle.x+2*particle.size,
-                                          y=particle.y+2*particle.size,
-                                          color=particle.color,
-                                          size=particle.size,
-                                          attractions=particle.attractions,
-                                          rmax=particle.rmax,
-                                          food_radar=particle.food_radar,
-                                          history=particle.history.copy() + [[particle.attractions,
-                                                                              particle.size,
-                                                                              particle.rmax,
-                                                                              particle.food_radar]],
+                        new_particle = pt(x=deepcopy(particle.x)+2*particle.size,
+                                          y=deepcopy(particle.y)+2*particle.size,
+                                          color=deepcopy(particle.color),
+                                          size=deepcopy(particle.size),
+                                          attractions=deepcopy(particle.attractions),
+                                          rmax=deepcopy(particle.rmax),
+                                          food_radar=deepcopy(particle.food_radar),
+                                          history=deepcopy(particle.history) + [[deepcopy(particle.attractions),
+                                                                              deepcopy(particle.size),
+                                                                              deepcopy(particle.rmax),
+                                                                              deepcopy(particle.food_radar)]],
                                           )
-                        # print(f"    New Part: {new_particle}")
-                        # print(new_particle.history)
                         new_particle.mutate()
-                        # print(new_particle.history)
-                        # print(f"            Mut Part: {new_particle}")
                         particles.append(new_particle)
                     
                     # Particles that haven't found enough food to reproduce will die
