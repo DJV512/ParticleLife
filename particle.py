@@ -4,7 +4,7 @@ from pygame import draw
 class Particle:
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, nutrition=0, size=None, reproduced=None, attractions=None, rmax = None, food_radar = None, history=None):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, nutrition=0, size=None, reproduced=None, attractions=None, rmax = None, food_radar = None, friction=None, history=None):
         '''
         Initializes a new object of the particle class.
         '''
@@ -72,6 +72,11 @@ class Particle:
             self.rmax = uniform(75, 125)
         else:
             self.rmax = rmax
+
+        if friction == None:
+            self.friction = uniform(.07, .13)
+        else:
+            self.friction = friction
         
         # Initialize a list called history to keep track of the historical parameters of a particle lineage
         if history == None:
@@ -124,7 +129,7 @@ class Particle:
         '''
         If this is a particle being created due to a reproduction event, randomly mutate one of its mutable parameters
         '''
-        param_to_change = randint(0,10)
+        param_to_change = randint(0,11)
         if 0 <= param_to_change <= 5:
             change = uniform(-0.1, 0.1)
             self.attractions[param_to_change] += change
@@ -139,4 +144,9 @@ class Particle:
             self.size += change
             if self.size < 1:
                 self.size = 1
+        elif param_to_change == 11:
+            change = uniform(-0.02, 0.02)
+            self.friction += change
+            if self.friction <= 0:
+                self.friction = 0.00001
         # print(f"         Param Changed: {param_to_change}; Change: {change}")

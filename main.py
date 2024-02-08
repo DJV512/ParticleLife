@@ -70,7 +70,6 @@ def main():
     total_time = 0
 
     # Set default values for changeable parameters
-    default_friction_half_life = 0.1
     default_beta = 0.1
     default_force_factor = 5
 
@@ -92,11 +91,9 @@ def main():
     add_food_num_loops = 9
 
     # Default values
-    friction_half_life = default_friction_half_life
     beta = default_beta
     # Control the friction force
     force_factor = default_force_factor
-    friction_factor = 0.5 ** (dt/friction_half_life)
 
     # Variables to measure the actual frame_rate
     actual_rate = rate
@@ -208,21 +205,13 @@ def main():
                                             manager=manager)
     slider_beta = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((35, slider_y + 20), (300, 20)),
                                                          start_value=beta, value_range=(0, 1), manager=manager)
-
-    text_friction = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((38, slider_y + 50), (290, 20)),
-                                                text=f"Friction (slow down over time): {default_friction_half_life:.2f}",
-                                                manager=manager)
-    slider_friction = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((35, slider_y + 70), (300, 20)),
-                                                             start_value=friction_half_life, value_range=(0.0001, 3),
-                                                             manager=manager)
     
-    text_force = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30, slider_y + 100), (250, 20)),
+    text_force = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30, slider_y + 50), (250, 20)),
                                              text=f"Force (scalar multiple): {default_force_factor:.2f}",
                                              manager=manager)
-    slider_force = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((35, slider_y + 120), (300, 20)),
+    slider_force = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((35, slider_y + 70), (300, 20)),
                                                           start_value=force_factor, value_range=(0, 50),
                                                           manager=manager)
-    
     
     reset_sliders_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((355, slider_y+15), (140, 30)),
                                             text='Reset Sliders', manager=manager)
@@ -310,35 +299,40 @@ def main():
                                 text="rmax:", manager=manager)
     ident_particle_rmax = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+60), (50,20)),
                                                    text=f"{selected_particle.rmax:.2f}", manager=manager)
-
+    
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+90), (90, 20)),
+                                text="friction:", manager=manager)
+    ident_particle_friction = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+90), (50,20)),
+                                                   text=f"{selected_particle.friction:.2f}", manager=manager)
+
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+120), (90, 20)),
                                 text="red:", manager=manager)
-    ident_particle_attraction0 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+90), (50,20)),
+    ident_particle_attraction0 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+120), (50,20)),
                                                    text=f"{selected_particle.attractions[0]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+120), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+150), (90, 20)),
                                 text="green:", manager=manager)
-    ident_particle_attraction1 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+120), (50,20)),
+    ident_particle_attraction1 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+150), (50,20)),
                                                    text=f"{selected_particle.attractions[1]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+150), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+180), (90, 20)),
                                 text="blue:", manager=manager)
-    ident_particle_attraction2 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+150), (50,20)),
+    ident_particle_attraction2 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+180), (50,20)),
                                                    text=f"{selected_particle.attractions[2]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+180), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+210), (90, 20)),
                                 text="purple:", manager=manager)
-    ident_particle_attraction3 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+180), (50,20)),
+    ident_particle_attraction3 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+210), (50,20)),
                                                    text=f"{selected_particle.attractions[3]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+210), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+240), (90, 20)),
                                 text="yellow:", manager=manager)
-    ident_particle_attraction4 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+210), (50,20)),
+    ident_particle_attraction4 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+240), (50,20)),
                                                    text=f"{selected_particle.attractions[4]:.2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+240), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+270), (90, 20)),
                                 text="cyan:", manager=manager)
-    ident_particle_attraction5 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+240), (50,20)),
+    ident_particle_attraction5 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+270), (50,20)),
                                                    text=f"{selected_particle.attractions[5]:2f}", manager=manager)
     
 
@@ -365,10 +359,6 @@ def main():
                 if event.ui_element == slider_beta:
                     beta = float(event.value)
                     text_beta.set_text(f"Beta (how close they can get): {beta:.2f}")
-                elif event.ui_element == slider_friction:
-                    friction_half_life = float(event.value)
-                    friction_factor = 0.5 ** (dt/friction_half_life)
-                    text_friction.set_text(f"Friction (slow down over time): {friction_half_life:.2f}")
                 elif event.ui_element == slider_force:
                     force_factor = float(event.value)
                     text_force.set_text(f"Force (scalar multiple): {force_factor:.2f}")
@@ -548,11 +538,6 @@ def main():
                     slider_beta.set_current_value(beta)
                     text_beta.set_text(f"Beta (how close they can get): {beta:.2f}")
 
-                    friction_half_life = default_friction_half_life
-                    friction_factor = 0.5 ** (dt/friction_half_life)
-                    slider_friction.set_current_value(friction_half_life)
-                    text_friction.set_text(f"Friction (slow down over time): {friction_half_life:.2f}")
-
                     force_factor = default_force_factor
                     slider_force.set_current_value(force_factor)
                     text_force.set_text(f"Force (scalar multiple): {force_factor:.2f}")
@@ -585,7 +570,6 @@ def main():
                             "rate": rate,
                             "evolution": evolution,
                             "life_expect_loops": life_expect_loops,
-                            "friction_half_life": friction_half_life,
                             "beta": beta,
                             "force_factor": force_factor,
                             "num_particles": num_particles,
@@ -596,7 +580,7 @@ def main():
                             "num_food_pieces": num_food_pieces
                         },
 
-                        "particle_data": [(part.x, part.y, part.x_vel, part.y_vel, part.age, part.color, part.size, part.nutrition, part.attractions, part.reproduced, part.rmax, part.food_radar, part.history) for part in particles],
+                        "particle_data": [(part.x, part.y, part.x_vel, part.y_vel, part.age, part.color, part.size, part.nutrition, part.attractions, part.reproduced, part.rmax, part.food_radar, part.friction, part.history) for part in particles],
 
                         "wall_data": [(wall.x, wall.y) for wall in walls],
 
@@ -647,7 +631,6 @@ def main():
                     rate = data["parameters"]["rate"]
                     evolution = data["parameters"]["evolution"]
                     life_expect_loops = data["parameters"]["life_expect_loops"]        
-                    friction_half_life = data["parameters"]["friction_half_life"]
                     beta = data["parameters"]["beta"]
                     force_factor = data["parameters"]["force_factor"]
                     num_particles = data["parameters"]["num_particles"]
@@ -660,8 +643,6 @@ def main():
 
                     slider_beta.set_current_value(beta)
                     text_beta.set_text(f"Beta (how close they can get): {beta:.2f}") 
-                    slider_friction.set_current_value(friction_half_life)
-                    text_friction.set_text(f"Friction (slow down over time): {friction_half_life:.2f}")
                     slider_force.set_current_value(force_factor)
                     text_force.set_text(f"Force (scalar multiple): {force_factor:.2f}")
 
@@ -681,7 +662,8 @@ def main():
                                     reproduced=["particle_data"][i][9],
                                     rmax=["particle_data"][i][10],
                                     food_radar=["particle_data"][i][11],
-                                    history=["particle_data"][i][12],
+                                    friction=["particle_data"][i][12],
+                                    history=["particle_data"][i][13],
                                     ) 
                                 for i in range(num_particles)]
                     
@@ -811,6 +793,7 @@ def main():
                 accel_y *= particle1.rmax * force_factor
                 
                 # Slow particle1 down to account for friction
+                friction_factor = 0.5 ** (dt/particle1.friction)
                 particle1.x_vel *= friction_factor
                 particle1.y_vel *= friction_factor
 
@@ -860,10 +843,12 @@ def main():
                                           attractions=deepcopy(particle.attractions),
                                           rmax=deepcopy(particle.rmax),
                                           food_radar=deepcopy(particle.food_radar),
+                                          friction=deepcopy(particle.friction),
                                           history=deepcopy(particle.history) + [[deepcopy(particle.attractions),
                                                                               deepcopy(particle.size),
                                                                               deepcopy(particle.rmax),
-                                                                              deepcopy(particle.food_radar)]],
+                                                                              deepcopy(particle.food_radar),
+                                                                              deepcopy(particle.friction)]],
                                           )
                         new_particle.mutate()
                         particles.append(new_particle)
@@ -894,17 +879,19 @@ def main():
         ident_particle_color.set_text(f"{color_dict[selected_particle.color]}")
         ident_particle_size.set_text(f"{selected_particle.size}")
         ident_particle_nutrition.set_text(f"{selected_particle.nutrition}")
+        ident_particle_history.set_text(f"{len(selected_particle.history)+1}")
         ident_particle_reproduced.set_text(f"{selected_particle.reproduced}")
         ident_particle_id.set_text(f"{hex(id(selected_particle))}")
         ident_particle_food_radar.set_text(f"{selected_particle.food_radar:.2f}")
         ident_particle_rmax.set_text(f"{selected_particle.rmax:.2f}")
+        ident_particle_friction.set_text(f"{selected_particle.friction:.2f}")
         ident_particle_attraction0.set_text(f"{selected_particle.attractions[0]:.2f}")
         ident_particle_attraction1.set_text(f"{selected_particle.attractions[1]:.2f}")
         ident_particle_attraction2.set_text(f"{selected_particle.attractions[2]:.2f}")
         ident_particle_attraction3.set_text(f"{selected_particle.attractions[3]:.2f}")
         ident_particle_attraction4.set_text(f"{selected_particle.attractions[4]:.2f}")
         ident_particle_attraction5.set_text(f"{selected_particle.attractions[5]:.2f}")
-        ident_particle_history.set_text(f"{len(selected_particle.history)+1}")
+
 
         # Updates the text for the total number of loops in the lifetime of the current sim
         loops_text.set_text(f"{total_num_loops}")
