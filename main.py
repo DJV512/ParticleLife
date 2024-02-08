@@ -60,7 +60,7 @@ def main():
     evolution = True
 
     # Life expectancy of a particle, related to food intake
-    life_expect_loops = 2000
+    life_expect_loops = 1000
 
     # Counters for the total number of loops and total time
     total_num_loops = 0
@@ -286,13 +286,18 @@ def main():
                                                    text=f"{selected_particle.nutrition}", manager=manager)
     
     pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+210), (90, 20)),
+                                text="generation:", manager=manager)
+    ident_particle_history = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+210), (50,20)),
+                                                   text=f"{len(selected_particle.history)+1}", manager=manager)
+
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+240), (90, 20)),
                                 text="reproduced:", manager=manager)
-    ident_particle_reproduced = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+210), (50,20)),
+    ident_particle_reproduced = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((150, ident_part_y+240), (50,20)),
                                                    text=f"{selected_particle.reproduced}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+240), (90, 20)),
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((50,ident_part_y+270), (90, 20)),
                                 text="ID:", manager=manager)
-    ident_particle_id = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, ident_part_y+240), (100,20)),
+    ident_particle_id = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((120, ident_part_y+270), (100,20)),
                                                    text=f"{hex(id(selected_particle))}", manager=manager)
     
 
@@ -336,10 +341,6 @@ def main():
     ident_particle_attraction5 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+240), (50,20)),
                                                    text=f"{selected_particle.attractions[5]:2f}", manager=manager)
     
-    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+270), (90, 20)),
-                                text="generation:", manager=manager)
-    ident_particle_history = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+270), (50,20)),
-                                                   text=f"{len(selected_particle.history)+1}", manager=manager)
 
 
     # Start the game loop
