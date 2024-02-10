@@ -59,8 +59,8 @@ def main():
     # Flag to determine whether evolution is on or off
     evolution = True
 
-    # Life expectancy of a particle, related to food intake
-    life_expect_loops = 1000
+    # Life expectancy of a particle
+    life_expect_loops = 500
 
     # Counters for the total number of loops and total time
     total_num_loops = 0
@@ -103,7 +103,7 @@ def main():
     SAVE = False
     LOAD = False
 
-    # Mouse parameters
+    # Initial mouse parameters
     mouse_mode = "ident"
     mouse_radius = 10
     grab = False
@@ -111,10 +111,12 @@ def main():
     remove_particles = False
     draw_wall = False
     remove_wall = False
+
+    # Initial wall parameters
     walls = []
     num_walls = 0
 
-    # Make num_particles number of randomly positioned and colored parrticles
+    # Make num_particles number of random parrticles
     particles = [pt() for _ in range(num_particles)]
 
     # Temporarily use the first created particle as the "selected" particle until the user selects their own
@@ -830,7 +832,6 @@ def main():
                     
                     necessary_nutrition = nutrition_to_reproduce + particle.size
                     used_nutrition = necessary_nutrition * particle.reproduced
-                    age_multiple = particle.age/life_expect_loops
 
                     # Particles with enough food reproduce
                     if particle.nutrition - used_nutrition >= necessary_nutrition:
@@ -848,13 +849,14 @@ def main():
                                                                               deepcopy(particle.size),
                                                                               deepcopy(particle.rmax),
                                                                               deepcopy(particle.food_radar),
-                                                                              deepcopy(particle.friction)]],
+                                                                              deepcopy(particle.friction),
+                                                                              deepcopy(particle.color)]],
                                           )
                         new_particle.mutate()
                         particles.append(new_particle)
                     
-                    # Particles that haven't found enough food to reproduce will die
-                    if age_multiple > 1 and particle.reproduced < age_multiple:
+                    # Old particles will die
+                    if particle.age > life_expect_loops:
                         food_pieces.append(Food(particle.x, particle.y, particle.size))
                         num_food_pieces += 1
                         particles.remove(particle)
@@ -891,7 +893,6 @@ def main():
         ident_particle_attraction3.set_text(f"{selected_particle.attractions[3]:.2f}")
         ident_particle_attraction4.set_text(f"{selected_particle.attractions[4]:.2f}")
         ident_particle_attraction5.set_text(f"{selected_particle.attractions[5]:.2f}")
-
 
         # Updates the text for the total number of loops in the lifetime of the current sim
         loops_text.set_text(f"{total_num_loops}")

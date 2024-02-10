@@ -129,24 +129,25 @@ class Particle:
         '''
         If this is a particle being created due to a reproduction event, randomly mutate one of its mutable parameters
         '''
-        param_to_change = randint(0,11)
-        if 0 <= param_to_change <= 5:
+        param_to_change = randint(0,34)
+        if 0 <= param_to_change <= 17:
             change = uniform(-0.1, 0.1)
-            self.attractions[param_to_change] += change
-        elif 6 <= param_to_change <= 7:
+            self.attractions[(param_to_change%6)] += change
+        elif 18 <= param_to_change <= 22:
             change = uniform(-0.1, 0.1)
             self.food_radar += change
-        elif 8 <= param_to_change <= 9:
+        elif 23 <= param_to_change <= 27:
             change = uniform(-25, 25)
             self.rmax += change
-        elif param_to_change == 10:
+        elif 28 <= param_to_change <= 30:
             change = choice([-1,1])
             self.size += change
             if self.size < 1:
                 self.size = 1
-        elif param_to_change == 11:
-            change = uniform(-0.02, 0.02)
+        elif 31 <= param_to_change <= 33:
+            change = uniform(-0.04, 0.04)
             self.friction += change
             if self.friction <= 0:
                 self.friction = 0.00001
-        # print(f"         Param Changed: {param_to_change}; Change: {change}")
+        elif param_to_change == 34:
+            self.color = randint(0,5)
