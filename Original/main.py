@@ -28,7 +28,7 @@ particle_size = 2
 wall_repel_distance = 30
 
 # Controls frame rate
-rate = 25
+rate = 40
 dt = 1/rate
 
 #Flag to determine whether particles should die randomly
@@ -109,7 +109,7 @@ def make_random_particles(num_particles):
     return x_positions, y_positions, x_velocity, y_velocity, particle_color, red_count, green_count, blue_count, purple_count, yellow_count, cyan_count
 
 def main():
-    num_particles = 600
+    num_particles = 200
     num_colors = 6
     rmax = default_rmax
     friction_half_life = default_friction_half_life

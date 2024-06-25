@@ -60,7 +60,7 @@ def main():
     evolution = True
 
     # Life expectancy of a particle
-    life_expect_loops = 500
+    life_expect_loops = 1000
 
     # Counters for the total number of loops and total time
     total_num_loops = 0
