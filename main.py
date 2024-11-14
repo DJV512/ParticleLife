@@ -377,7 +377,7 @@ def main():
                 
                 # Handles changes in mouse mode
                 elif event.ui_element == mouse_mode_menu:
-                    if event.text == "Ident Particle":
+                    if event.text == "Ident Particles":
                         mouse_mode = "ident"
                     elif event.text == "Grab Particles":
                         mouse_mode = "grab"
@@ -448,19 +448,19 @@ def main():
                                 selected_particle = particle
 
                     # When wall is selected, mouse clicking will draw wall
-                    elif mouse_mode == "wall":
-                        draw_wall = True
-                        walls.append(Wall(m_x, m_y, mouse_radius))
-                        num_walls += 1
+                    # elif mouse_mode == "wall":
+                    #     draw_wall = True
+                    #     walls.append(Wall(m_x, m_y, mouse_radius))
+                    #     num_walls += 1
                     
                     # When remove wall is selected, mouse clicking will remove wall
-                    elif mouse_mode == "remove_wall":
-                        remove_wall = True
-                        for wall in walls.copy():
-                            r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
-                            if r < mouse_radius:
-                                walls.remove(wall)
-                                num_walls -= 1
+                    # elif mouse_mode == "remove_wall":
+                    #     remove_wall = True
+                    #     for wall in walls.copy():
+                    #         r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
+                    #         if r < mouse_radius:
+                    #             walls.remove(wall)
+                    #             num_walls -= 1
 
                     
             # Handle mouse motion 
@@ -495,17 +495,17 @@ def main():
                         num_particles += 1
                     
                     # Mouse dragging draws more wall pieces
-                    elif draw_wall:
-                        walls.append(Wall(m_x, m_y, mouse_radius))
-                        num_walls += 1
+                    # elif draw_wall:
+                    #     walls.append(Wall(m_x, m_y, mouse_radius))
+                    #     num_walls += 1
 
                     # Mouse dragging removes more wall pieces
-                    elif remove_wall:
-                        for wall in walls.copy():
-                            r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
-                            if r < mouse_radius:
-                                walls.remove(wall)
-                                num_walls -= 1
+                    # elif remove_wall:
+                    #     for wall in walls.copy():
+                    #         r = ((wall.x-m_x)**2 + (wall.y-m_y)**2)**(1/2)
+                    #         if r < mouse_radius:
+                    #             walls.remove(wall)
+                    #             num_walls -= 1
 
             # Handle releasing mouse button
             elif event.type == pygame.MOUSEBUTTONUP:
@@ -525,12 +525,12 @@ def main():
                     remove_particles = False
                 
                 # Letting go of mouse stops drawing wall
-                elif draw_wall:
-                    draw_wall = False
+                # elif draw_wall:
+                #     draw_wall = False
                 
                 # Letting go of mouse stops removing wall
-                elif remove_wall:
-                    remove_wall = False
+                # elif remove_wall:
+                #     remove_wall = False
 
 
             # Handle button click
@@ -911,9 +911,9 @@ def main():
         pygame.draw.circle(simulation_screen, WHITE, (selected_particle.x, selected_particle.y), selected_particle.size + 4, 1)
 
         #Draw the walls, if any have been added
-        if num_walls > 0:
-            for wall in walls:
-                wall.draw_wall(simulation_screen)
+        # if num_walls > 0:
+        #     for wall in walls:
+        #         wall.draw_wall(simulation_screen)
 
         #Determine length of time it took the current iteration of the game loop to run, and calculate actual FPS
         t1 = time()
