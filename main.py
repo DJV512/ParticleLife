@@ -59,9 +59,6 @@ def main():
     # Flag to determine whether evolution is on or off
     evolution = True
 
-    # Life expectancy of a particle
-    life_expect_loops = 1000
-
     # Counters for the total number of loops and total time
     total_num_loops = 0
     ttotal_min = 0
@@ -337,7 +334,10 @@ def main():
     ident_particle_attraction5 = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+270), (50,20)),
                                                    text=f"{selected_particle.attractions[5]:2f}", manager=manager)
     
-
+    pygame_gui.elements.UILabel(relative_rect=pygame.Rect((250,ident_part_y+300), (90, 20)),
+                                text="life length:", manager=manager)
+    ident_particle_life_length = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((350, ident_part_y+300), (50,20)),
+                                                   text=f"{selected_particle.life_length:2f}", manager=manager)
 
     # Start the game loop
     running = True
@@ -571,7 +571,6 @@ def main():
                             "particle_repel_force": particle_repel_force,
                             "rate": rate,
                             "evolution": evolution,
-                            "life_expect_loops": life_expect_loops,
                             "beta": beta,
                             "force_factor": force_factor,
                             "num_particles": num_particles,
@@ -631,8 +630,7 @@ def main():
 
                     particle_repel_force = data["parameters"]["particle_repel_force"]
                     rate = data["parameters"]["rate"]
-                    evolution = data["parameters"]["evolution"]
-                    life_expect_loops = data["parameters"]["life_expect_loops"]        
+                    evolution = data["parameters"]["evolution"]    
                     beta = data["parameters"]["beta"]
                     force_factor = data["parameters"]["force_factor"]
                     num_particles = data["parameters"]["num_particles"]
@@ -845,18 +843,20 @@ def main():
                                           rmax=deepcopy(particle.rmax),
                                           food_radar=deepcopy(particle.food_radar),
                                           friction=deepcopy(particle.friction),
+                                          life_length=deepcopy(particle.life_length),
                                           history=deepcopy(particle.history) + [[deepcopy(particle.attractions),
                                                                               deepcopy(particle.size),
                                                                               deepcopy(particle.rmax),
                                                                               deepcopy(particle.food_radar),
                                                                               deepcopy(particle.friction),
-                                                                              deepcopy(particle.color)]],
+                                                                              deepcopy(particle.color),
+                                                                              deepcopy(particle.life_length)]],
                                           )
                         new_particle.mutate()
                         particles.append(new_particle)
                     
                     # Old particles will die
-                    if particle.age > life_expect_loops:
+                    if particle.age > particle.life_length:
                         food_pieces.append(Food(particle.x, particle.y, particle.size))
                         num_food_pieces += 1
                         particles.remove(particle)
@@ -893,6 +893,7 @@ def main():
         ident_particle_attraction3.set_text(f"{selected_particle.attractions[3]:.2f}")
         ident_particle_attraction4.set_text(f"{selected_particle.attractions[4]:.2f}")
         ident_particle_attraction5.set_text(f"{selected_particle.attractions[5]:.2f}")
+        ident_particle_life_length.set_text(f"{selected_particle.life_length}")
 
         # Updates the text for the total number of loops in the lifetime of the current sim
         loops_text.set_text(f"{total_num_loops}")

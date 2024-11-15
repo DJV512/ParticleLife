@@ -4,7 +4,7 @@ from pygame import draw
 class Particle:
     COLORS=[(255,0,0), (0,255,0), (0,0,255), (255,0,255), (255,255,0), (0,255,255)]
     
-    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, nutrition=0, size=None, reproduced=None, attractions=None, rmax = None, food_radar = None, friction=None, history=None):
+    def __init__(self, x=None, y=None, x_vel=None, y_vel=None, age=None, color=None, nutrition=0, size=None, reproduced=None, attractions=None, rmax = None, food_radar = None, friction=None, history=None, life_length=None):
         '''
         Initializes a new object of the particle class.
         '''
@@ -82,7 +82,13 @@ class Particle:
         if history == None:
             self.history=[]
         else:
-            self.history=history
+            self.history = history
+
+        # Initialize life expectancy
+        if life_length == None:
+            self.life_length = randint(800, 1200)
+        else:
+            self.life_length = life_length
 
     
     def __repr__(self):
@@ -129,7 +135,7 @@ class Particle:
         '''
         If this is a particle being created due to a reproduction event, randomly mutate one of its mutable parameters
         '''
-        param_to_change = randint(0,34)
+        param_to_change = randint(0,35)
         if 0 <= param_to_change <= 17:
             change = uniform(-0.1, 0.1)
             self.attractions[(param_to_change%6)] += change
@@ -151,3 +157,6 @@ class Particle:
                 self.friction = 0.00001
         elif param_to_change == 34:
             self.color = randint(0,5)
+        elif param_to_change == 35:
+            change = randint(-50,50)
+            self.life_length += change
